@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>The Era of Medieval Wars</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<style>
+:root{--red:#8f1a1a;--redb:#d32f2f;--gold:#c9a227;--text:#e6e1d8}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;height:100%;overflow:hidden}
+body{font-family:Georgia,serif;color:var(--text);background:#2b2b2b;background-image:radial-gradient(circle at 18% 8%,rgba(255,255,255,.055),transparent 45%),radial-gradient(circle at 82% 92%,rgba(0,0,0,.5),transparent 55%),repeating-linear-gradient(45deg,rgba(255,255,255,.014) 0 2px,transparent 2px 7px);user-select:none}
+input[type=number]{-moz-appearance:textfield}
+input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+.screen{position:fixed;inset:0;display:none}.screen.active{display:block}
+#gameScreen.active{display:flex;flex-direction:column}
+.btn{font-family:inherit;font-size:20px;letter-spacing:1px;text-transform:uppercase;color:var(--text);padding:13px 30px;border:2px solid var(--red);border-radius:6px;cursor:pointer;background:linear-gradient(180deg,#4b4b4b,#2c2c2c);box-shadow:inset 0 1px 0 rgba(255,255,255,.1),inset 0 -2px 6px rgba(0,0,0,.45),0 5px 12px rgba(0,0,0,.55);transition:transform .12s,background .18s,border-color .18s,box-shadow .18s}
+.btn:hover{background:linear-gradient(180deg,#5e5e5e,#383838);border-color:var(--redb);transform:translateY(-2px);box-shadow:inset 0 1px 0 rgba(255,255,255,.14),0 8px 18px rgba(0,0,0,.6),0 0 16px rgba(211,47,47,.35)}
+.btn:active{transform:translateY(1px)}.btn:disabled{opacity:.5;cursor:default;transform:none!important}
+.btn.big{font-size:27px;padding:20px 58px}.btn.small{font-size:15px;padding:9px 18px}
+.gold-btn{border-color:var(--gold);color:#e6d9a0}
+.gold-btn:hover{border-color:#f0d06a;box-shadow:0 8px 18px rgba(0,0,0,.6),0 0 16px rgba(201,162,39,.5)}
+#mainMenu .title{position:absolute;top:34px;left:48px;margin:0;max-width:62%;font-family:'Cinzel Decorative',Georgia,serif;font-weight:900;font-size:clamp(26px,4.6vw,62px);line-height:1.08;letter-spacing:3px;color:#b3151a;text-shadow:0 0 22px rgba(190,25,25,.55),3px 3px 0 #140505}
+.bottom-left{position:absolute;left:48px;bottom:40px;display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+.corner-br{position:absolute;right:40px;bottom:32px}.corner-tl{position:absolute;left:32px;top:28px;z-index:5}
+.center{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);display:flex;align-items:center;justify-content:center;gap:40px;flex-wrap:wrap;width:100%;padding:0 20px}
+.bottom-center{position:absolute;left:50%;bottom:34px;transform:translateX(-50%)}
+.topbar{display:flex;flex-wrap:wrap;align-items:center;gap:10px 22px;padding:12px 22px;background:linear-gradient(180deg,#3b3b3b,#232323);border-bottom:3px solid var(--red);flex-shrink:0}
+.topbar .item{font-size:16px;white-space:nowrap}.topbar .item b{color:var(--gold);font-weight:normal}
+.topbar .sep{width:2px;height:22px;background:rgba(255,255,255,.12)}.topbar .spacer{flex:1 1 16px}
+.phase{color:var(--gold);text-transform:uppercase;font-size:13px!important;letter-spacing:1.4px!important;padding:4px 12px;border:1px solid rgba(201,162,39,.45);border-radius:4px;background:rgba(201,162,39,.07);white-space:nowrap}
+.phase.battle{color:#ffb4a2;border-color:rgba(211,47,47,.6);background:rgba(211,47,47,.12)}
+.net-status{font-size:12px;padding:4px 10px;border-radius:4px;display:none;white-space:nowrap}
+.net-status.show{display:inline-block}
+.net-status.waiting{color:#ffd070;background:rgba(150,120,30,.2);border:1px solid rgba(200,160,50,.5)}
+.net-status.connected{color:#7fff7f;background:rgba(50,150,50,.2);border:1px solid rgba(50,200,50,.5)}
+.net-status.disconnected{color:#ff7070;background:rgba(150,50,50,.2);border:1px solid rgba(200,50,50,.5)}
+.ready-btn{font-size:18px;padding:11px 30px;border-color:var(--gold);background:linear-gradient(180deg,#7d2323,#4a1212);color:#ffe9c9;animation:pulse 2s ease-in-out infinite}
+.ready-btn:disabled{animation:none;opacity:.75}
+@keyframes pulse{0%,100%{box-shadow:inset 0 1px 0 rgba(255,255,255,.12),0 6px 16px rgba(0,0,0,.55),0 0 8px rgba(201,162,39,.25)}50%{box-shadow:inset 0 1px 0 rgba(255,255,255,.12),0 6px 16px rgba(0,0,0,.55),0 0 24px rgba(201,162,39,.7)}}
+.prep-panel{display:flex;align-items:center;gap:10px;padding:9px 22px;background:linear-gradient(180deg,#2e2e2e,#1e1e1e);border-bottom:2px solid #444;flex-shrink:0;flex-wrap:wrap;min-height:48px}
+.prep-group{display:flex;gap:6px;align-items:center}
+.prep-label{color:#999;font-size:13px;white-space:nowrap}
+.prep-sep{width:1px;height:24px;background:#444}
+.prep-btn{font-family:inherit;font-size:14px;padding:6px 14px;color:var(--text);background:linear-gradient(180deg,#3a3a3a,#252525);border:1px solid #555;border-radius:4px;cursor:pointer;min-width:36px}
+.prep-btn:hover:not(:disabled){border-color:var(--redb);background:linear-gradient(180deg,#4a4a4a,#333)}
+.prep-btn.active{border-color:var(--gold);background:linear-gradient(180deg,#7d2323,#4a1212);color:#ffe9c9;box-shadow:0 0 10px rgba(201,162,39,.4)}
+.prep-btn.insufficient{background:linear-gradient(180deg,#5a1a1a,#2e0808)!important;border-color:#7a1010!important;color:#a06060!important;opacity:.55;cursor:not-allowed!important}
+.clear-btn{border-color:#666}.cossack-btn{border-color:#8a6d2a;color:#f0d590}
+.kotel-btn{border-color:#8a4a4a;color:#e0b0b0}
+.kotel-btn.active{border-color:var(--redb)!important;background:linear-gradient(180deg,#7d2323,#4a1212)!important;color:#ffe9c9!important}
+.prep-hint{color:#666;font-size:12px;font-style:italic;margin-left:auto;white-space:nowrap}
+.prep-input{width:72px;font-family:inherit;font-size:14px;padding:6px 8px;color:var(--text);background:linear-gradient(180deg,#3a3a3a,#252525);border:1px solid #555;border-radius:4px;outline:none;text-align:center}
+.prep-input:focus{border-color:var(--gold)}
+.prep-input.invalid{border-color:#c03030;background:linear-gradient(180deg,#5a1a1a,#2e0808);color:#ffb0b0}
+.board-wrap{flex:1;position:relative;display:flex;align-items:center;justify-content:center;padding:16px;min-height:0;overflow:hidden}
+#board{display:block;border-radius:5px;box-shadow:0 14px 40px rgba(0,0,0,.7);cursor:pointer}
+.round-overlay{position:absolute;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.72);z-index:300;padding:20px}
+.round-overlay.show{display:flex}
+.round-result-card{background:linear-gradient(180deg,#3a3a3a,#262626);border:2px solid var(--gold);border-radius:12px;padding:30px 40px;text-align:center;max-width:540px;max-height:85vh;overflow-y:auto;animation:pop .2s}
+@keyframes pop{from{transform:scale(.94);opacity:0}to{transform:scale(1);opacity:1}}
+.round-result-card h2{margin:0 0 14px;font-family:'Cinzel Decorative',Georgia,serif;font-size:24px;color:var(--gold)}
+.round-result-card p{margin:0 0 22px;font-size:15px;color:#ccc;line-height:1.6;white-space:pre-line;text-align:left}
+.kotel-flash{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.85);z-index:900;pointer-events:none}
+.kotel-flash.show{display:flex;animation:kotelFade 2s ease-out}
+.kotel-text{font-family:'Cinzel Decorative',Georgia,serif;font-size:clamp(36px,9vw,110px);font-weight:900;color:#ff2020;text-align:center;text-shadow:0 0 30px rgba(255,50,50,.9)}
+@keyframes kotelFade{0%{opacity:0}10%{opacity:1}80%{opacity:1}100%{opacity:0}}
+.modal{position:fixed;inset:0;display:none;background:rgba(0,0,0,.72);backdrop-filter:blur(2px);z-index:500;padding:20px;overflow-y:auto}
+.modal.open{display:flex}
+.modal-card{margin:auto;width:100%;max-width:430px;padding:28px 30px 24px;background:linear-gradient(180deg,#3a3a3a,#262626);border:2px solid var(--red);border-radius:10px;animation:pop .18s}
+.modal-card h2{margin:0 0 18px;font-family:'Cinzel Decorative',Georgia,serif;font-size:23px;color:#d8cfc0}
+.modal-card .row{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:6px;font-size:16px}
+.modal-card .row .val{color:var(--gold);min-width:56px;text-align:right;font-size:15px}
+.modal-card .actions{margin-top:22px;display:flex;justify-content:center}
+.settings-input{width:100%;font-family:inherit;font-size:16px;padding:8px 12px;color:var(--text);background:#232323;border:2px solid var(--red);border-radius:6px;outline:none;margin:4px 0 14px;text-align:center}
+.settings-input:focus{border-color:var(--gold)}
+input[type=range]{-webkit-appearance:none;width:100%;height:8px;border-radius:4px;background:linear-gradient(90deg,var(--red) 0%,#555 0%);outline:none;cursor:pointer;border:1px solid #1a1a1a;margin:6px 0 12px}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#e0d8c8,#8b8272 70%,#4a443a);border:2px solid var(--red);cursor:pointer}
+select{font-family:inherit;font-size:16px;color:var(--text);background:#232323;border:2px solid var(--red);border-radius:6px;padding:7px 12px;cursor:pointer;outline:none}
+.toast{position:fixed;top:46px;left:50%;transform:translate(-50%,-22px);padding:14px 30px;font-size:17px;color:var(--text);background:rgba(20,20,20,.96);border:2px solid var(--red);border-radius:8px;opacity:0;pointer-events:none;transition:opacity .35s,transform .35s;z-index:1000;white-space:nowrap;max-width:92vw;overflow:hidden;text-overflow:ellipsis}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+.rules-card{max-width:640px}
+.rules-scroll{max-height:58vh;overflow-y:auto;padding-right:12px;margin-bottom:8px;font-size:14px;line-height:1.65;color:#d4cec2;text-align:left}
+.rules-scroll h3{margin:14px 0 6px;color:var(--gold);font-size:15px;text-transform:uppercase}
+.rules-scroll ul{margin:4px 0 8px;padding-left:22px}
+.rules-scroll::-webkit-scrollbar{width:10px}
+.rules-scroll::-webkit-scrollbar-thumb{background:#8f1a1a;border-radius:5px}
+.lobby-container{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);display:flex;gap:30px;flex-wrap:wrap;justify-content:center;padding:0 20px;width:100%;max-width:1000px}
+.lobby-panel{background:linear-gradient(180deg,#3a3a3a,#262626);border:2px solid var(--red);border-radius:12px;padding:24px 26px;min-width:320px;flex:1 1 380px;max-width:440px;text-align:center}
+.lobby-panel h2{margin:0 0 18px;font-family:'Cinzel Decorative',Georgia,serif;font-size:20px;color:var(--gold)}
+.lobby-code-display{margin:16px 0 10px;padding:12px;background:#1c1c1c;border:2px solid var(--gold);border-radius:6px;font-family:'Courier New',monospace;font-size:22px;letter-spacing:4px;color:#ffe9c9}
+.lobby-input{width:100%;font-family:'Courier New',monospace;font-size:20px;text-align:center;letter-spacing:3px;padding:10px;background:#1c1c1c;color:var(--text);border:2px solid var(--red);border-radius:6px;outline:none;margin:10px 0 14px;text-transform:uppercase}
+.lobby-settings{margin-top:18px;text-align:left}
+.lobby-setting-row{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:10px;font-size:14px;color:#ccc}
+.lobby-setting-row span{flex:1;text-align:left}
+.lobby-setting-row select{font-size:14px;padding:6px 10px;min-width:100px}
+.lobby-input-num{width:100px;font-family:inherit;font-size:15px;padding:6px 10px;color:var(--text);background:#232323;border:2px solid var(--red);border-radius:6px;outline:none;text-align:center}
+.lobby-input-num:focus{border-color:var(--gold)}
+.lobby-status{margin-top:16px;padding:10px;border-radius:6px;font-size:14px;background:rgba(0,0,0,.35);border:1px solid #444;color:#aaa;min-height:20px}
+.lobby-status.ok{color:#7fff7f;border-color:rgba(50,200,50,.5);background:rgba(50,150,50,.15)}
+.lobby-status.err{color:#ff7070;border-color:rgba(200,50,50,.5);background:rgba(150,50,50,.15)}
+@media(max-width:700px){#mainMenu .title{top:20px;left:20px;max-width:88%}.bottom-left{left:20px;bottom:24px;gap:10px}.btn.big{font-size:21px;padding:15px 34px}.center{gap:20px;flex-direction:column}.prep-hint{display:none}.lobby-container{gap:18px}.lobby-panel{min-width:0;padding:18px 16px}}
+</style>
+</head>
+<body>
+
+<div id="mainMenu" class="screen active">
+  <h1 class="title">The Era<br>of Medieval Wars</h1>
+  <div class="bottom-left">
+    <button class="btn big" id="btnPlay">Игра</button>
+    <button class="btn gold-btn" id="btnRules">Правила</button>
+    <button class="btn" id="btnExit">Выход</button>
+  </div>
+  <button class="btn corner-br" id="btnSettingsMain">Настройки</button>
+</div>
+
+<div id="modeMenu" class="screen">
+  <button class="btn small corner-tl" id="btnBackFromMode">Назад</button>
+  <div class="center">
+    <button class="btn big" id="btnSingle">Одиночная игра</button>
+    <button class="btn big gold-btn" id="btnOnline">Игра с другом (Онлайн)</button>
+  </div>
+</div>
+
+<div id="sideMenu" class="screen">
+  <button class="btn small corner-tl" id="btnBackFromSide">Назад</button>
+  <div class="center">
+    <button class="btn big" data-side="attack">Атакующие</button>
+    <button class="btn big" data-side="defend">Обороняющие</button>
+  </div>
+  <button class="btn bottom-center" id="btnMatchSettings">Настройки</button>
+</div>
+
+<div id="lobbyScreen" class="screen">
+  <button class="btn small corner-tl" id="btnBackFromLobby">Назад</button>
+  <div class="lobby-container">
+    <div class="lobby-panel">
+      <h2>Создать игру (Хост)</h2>
+      <button class="btn" id="btnCreateRoom">Создать комнату</button>
+      <div id="hostInfo" style="display:none">
+        <div class="lobby-code-display">Код: <span id="roomCode">—</span></div>
+        <button class="btn small" id="btnCopyCode">Скопировать код</button>
+        <div class="lobby-settings">
+          <div class="lobby-setting-row"><span>Ваша сторона:</span>
+            <select id="hostSide"><option value="attack">Атакующие</option><option value="defend">Обороняющие</option></select></div>
+          <div class="lobby-setting-row"><span>Раунды:</span>
+            <select id="hostRounds"><option value="3">3</option><option value="5" selected>5</option><option value="7">7</option><option value="9">9</option></select></div>
+          <div class="lobby-setting-row"><span>Старт. юниты (Атака):</span>
+            <input type="number" id="hostUnits" class="lobby-input-num" min="10" value="120"></div>
+          <div class="lobby-setting-row"><span>Старт. кони:</span>
+            <input type="number" id="hostHorses" class="lobby-input-num" min="0" value="40"></div>
+          <div class="lobby-setting-row"><span>Сила набегов:</span>
+            <input type="number" id="hostRaid" class="lobby-input-num" min="0" value="15"></div>
+        </div>
+        <div class="lobby-status" id="hostStatus">Ожидание гостя...</div>
+      </div>
+    </div>
+    <div class="lobby-panel">
+      <h2>Присоединиться (Гость)</h2>
+      <input type="text" id="joinCodeInput" class="lobby-input" placeholder="КОД" maxlength="8">
+      <button class="btn" id="btnJoinRoom">Подключиться</button>
+      <div class="lobby-status" id="guestStatus">Введите код комнаты</div>
+    </div>
+  </div>
+</div>
+
+<div id="gameScreen" class="screen">
+  <div class="topbar">
+    <span class="item">Вы играете за: <b id="sideLabel">—</b></span>
+    <span class="sep"></span>
+    <span class="item" id="roundLabel">Раунд 1 / 5</span>
+    <span class="sep"></span>
+    <span class="item">Ресурсы: <b id="resLabel">120</b> юнитов, <b id="resHorses">40</b> коней</span>
+    <span class="spacer"></span>
+    <span class="net-status" id="netStatus"></span>
+    <span class="phase" id="phaseLabel">Фаза подготовки</span>
+    <button class="btn ready-btn" id="btnReady">Готов</button>
+    <button class="btn small" id="btnToMain">В главное меню</button>
+  </div>
+  <div class="prep-panel" id="prepPanel">
+    <span class="prep-label">Тип:</span>
+    <div class="prep-group">
+      <button class="prep-btn" data-type="inf">Пехота</button>
+      <button class="prep-btn" data-type="cav">Кавалерия</button>
+    </div>
+    <div class="prep-sep"></div>
+    <span class="prep-label">Отряд:</span>
+    <div class="prep-group">
+      <button class="prep-btn" data-size="5">5</button>
+      <button class="prep-btn" data-size="10">10</button>
+      <button class="prep-btn" data-size="20">20</button>
+      <button class="prep-btn" data-size="40">40</button>
+    </div>
+    <span class="prep-label">Свое:</span>
+    <input type="number" id="customSizeInput" class="prep-input" min="1" value="5">
+    <div class="prep-sep"></div>
+    <button class="prep-btn clear-btn" id="btnClear">Очистить</button>
+    <button class="prep-btn cossack-btn" id="btnCossacks" style="display:none">Казаки (15)</button>
+    <button class="prep-btn kotel-btn" id="btnKotel" style="display:none">Котел</button>
+    <span class="prep-hint">ЛКМ — поставить · ПКМ — убрать</span>
+  </div>
+  <div class="board-wrap" id="boardWrap">
+    <canvas id="board"></canvas>
+    <div class="round-overlay" id="roundOverlay">
+      <div class="round-result-card">
+        <h2 id="roundResultTitle">Результат раунда</h2>
+        <p id="roundResultText"></p>
+        <button class="btn" id="btnNextRound">Следующий раунд</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="kotel-flash" id="kotelFlash"><div class="kotel-text">ВРАГ В КОТЛЕ!</div></div>
+
+<div class="modal" id="settingsModal">
+  <div class="modal-card">
+    <h2>Настройки</h2>
+    <div class="row"><span>Громкость звука</span><span class="val" id="volumeValue">50%</span></div>
+    <input type="range" id="volumeSlider" min="0" max="100" step="1" value="50">
+    <div class="actions"><button class="btn" id="btnCloseSettings">Выйти</button></div>
+  </div>
+</div>
+
+<div class="modal" id="matchModal">
+  <div class="modal-card">
+    <h2>Настройки матча</h2>
+    <div class="row"><span>Раундов</span>
+      <select id="roundsSelect"><option value="3">3</option><option value="5" selected>5</option><option value="7">7</option><option value="9">9</option></select></div>
+    <div class="row" style="margin-top:10px"><span>Стартовые юниты (Атака)</span></div>
+    <input type="number" id="unitsInput" class="settings-input" min="10" value="120">
+    <div class="row"><span>Стартовые кони</span></div>
+    <input type="number" id="horsesInput" class="settings-input" min="0" value="40">
+    <div class="row"><span>Сила набегов (макс.)</span></div>
+    <input type="number" id="raidInput" class="settings-input" min="0" value="15">
+    <p style="color:#999;font-size:12px;margin:8px 0 0;text-align:left;line-height:1.5">Обороняющие получат +40 юнитов. Со 2-го раунда: +20 юнитов, +5 коней каждой стороне.</p>
+    <div class="actions"><button class="btn" id="btnCloseMatch">Выйти</button></div>
+  </div>
+</div>
+
+<div class="modal" id="rulesModal">
+  <div class="modal-card rules-card">
+    <h2>Правила игры</h2>
+    <div class="rules-scroll">
+      <p><strong>Цель:</strong> Победить армию противника по итогам серии раундов или истощить его резервы.</p>
+      <h3>Войска</h3>
+      <ul><li><strong>Пехота:</strong> тратит 1 юнита.</li><li><strong>Кавалерия:</strong> тратит 1 юнита + 1 коня. Первый удар — двойной таранный урон.</li></ul>
+      <h3>Баланс ресурсов</h3>
+      <ul><li>Обороняющие на старте имеют <strong>+40 юнитов</strong> сверх базового значения Атакующих. Коней у обеих сторон поровну.</li><li>Со 2-го раунда обе стороны получают подкрепление: <strong>+20 юнитов и +5 коней</strong>.</li></ul>
+      <h3>Подготовка</h3>
+      <ul><li>Ваша зона видна, зона врага скрыта. «Готов» снимает туман и запускает бой.</li><li>ПКМ по отряду убирает в резерв.</li><li>Можно ставить отряды произвольного размера.</li></ul>
+      <h3>Казаки</h3>
+      <ul><li>В конце раунда (кроме последнего) казаки грабят оба лагеря.</li><li>Атакующие обязаны оставлять 15 юнитов в резерве (кроме последнего раунда). Раз за раунд Атакующий может отправить 15 казаков в диверсию.</li></ul>
+      <h3>Тактика обороны</h3>
+      <ul><li><strong>Засада:</strong> кавалерия в 26-м столбце выбегает через 2.5с и даёт +40% урона на 4с.</li><li><strong>Котёл:</strong> отряды на 1-й и 10-й строках, сомкнувшись, уничтожают 70% врагов, 30% берут в плен.</li></ul>
+    </div>
+    <div class="actions"><button class="btn" id="btnCloseRules">Закрыть</button></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+"use strict";
+const state={mode:"single",volume:50,rounds:5,side:null,opponentSide:null,round:1,phase:"prepare",
+units:120,horses:40,enemyUnits:120,enemyHorses:40,startingUnits:120,startingHorses:40,raidStrength:15,
+troops:[],selectedType:"inf",selectedSize:5,breakthrough:false,cossackSent:false,
+raidBonusDefender:0,raidReductionAttacker:0,ambushTroopId:null,ambushReleased:false,ambushBuffUntil:0,
+kotelMode:false,kotelTriggered:false,battleTime:0};
+const net={peer:null,conn:null,isHost:false,roomId:null,connected:false,myReady:false,oppReady:false,
+oppPlacement:null,oppKotelMode:false,oppCossackSent:false};
+const SIDE_NAMES={attack:"Атакующих",defend:"Обороняющих"};
+const ROUNDS_OK=[3,5,7,9];
+const DEF_BONUS=40, REINF_U=20, REINF_H=5;
+const COLS=26,ROWS=10,CELL=36,LW=COLS*CELL,LH=ROWS*CELL,NEUTRAL=10,DEF_START=16,RANGE=1.4,MIN_ATK_RES=15;
+let nextId=1, battleAnim=null, lastBattleTime=0;
+function zoneBounds(s){return s==="attack"?[0,NEUTRAL]:[DEF_START,COLS];}
+function isNetwork(){return state.mode==="network";}
+function $(id){return document.getElementById(id);}
+function showScreen(id){
+  document.querySelectorAll(".screen").forEach(s=>s.classList.toggle("active",s.id===id));
+  if(id==="gameScreen") requestAnimationFrame(()=>{resizeCanvas();drawBoard();});
+}
+function openModal(id){$(id).classList.add("open");}
+function closeModal(id){$(id).classList.remove("open");}
+let toastTimer=null;
+function showToast(m,d){const t=$("toast");t.textContent=m;t.classList.add("show");clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove("show"),d||2000);}
+function fillRange(s){const mn=parseFloat(s.min)||0,mx=parseFloat(s.max)||100,v=parseFloat(s.value)||0;const p=mx>mn?((v-mn)/(mx-mn))*100:0;s.style.background=`linear-gradient(90deg,var(--red) 0%,var(--red) ${p}%,#555 ${p}%,#555 100%)`;}
+function updateNetStatus(st){const el=$("netStatus");if(!el)return;if(!st){el.classList.remove("show");return;}el.classList.add("show");el.classList.remove("waiting","connected","disconnected");el.classList.add(st);el.textContent=st==="connected"?"Онлайн: подключено":st==="waiting"?"Онлайн: ожидание...":"Соперник отключился";}
+function clampNum(el,mn,fb){let v=parseInt(el.value,10);if(isNaN(v)||v<mn)v=fb;if(v<mn)v=mn;el.value=String(v);return v;}
+
+/* MENUS */
+$("btnPlay").onclick=()=>showScreen("modeMenu");
+$("btnExit").onclick=()=>{showToast("Спасибо за игру");setTimeout(()=>window.close(),900);};
+$("btnSettingsMain").onclick=()=>openModal("settingsModal");
+$("btnRules").onclick=()=>openModal("rulesModal");
+$("btnCloseRules").onclick=()=>closeModal("rulesModal");
+$("btnSingle").onclick=()=>showScreen("sideMenu");
+$("btnOnline").onclick=()=>{if(typeof Peer==="undefined"){showToast("PeerJS не загружен",3500);return;}showScreen("lobbyScreen");resetLobby();};
+$("btnBackFromMode").onclick=()=>showScreen("mainMenu");
+$("btnBackFromLobby").onclick=()=>{cleanupNet();showScreen("modeMenu");};
+document.querySelectorAll("#sideMenu [data-side]").forEach(b=>{b.onclick=()=>startSingle(b.dataset.side);});
+$("btnBackFromSide").onclick=()=>showScreen("modeMenu");
+
+/* SETTINGS */
+$("btnMatchSettings").onclick=()=>{$("roundsSelect").value=String(state.rounds);$("unitsInput").value=String(state.startingUnits);$("horsesInput").value=String(state.startingHorses);$("raidInput").value=String(state.raidStrength);openModal("matchModal");};
+$("btnCloseMatch").onclick=()=>{state.startingUnits=clampNum($("unitsInput"),10,120);state.startingHorses=clampNum($("horsesInput"),0,40);state.raidStrength=clampNum($("raidInput"),0,15);closeModal("matchModal");};
+$("roundsSelect").onchange=e=>{const v=parseInt(e.target.value,10);if(ROUNDS_OK.indexOf(v)!==-1)state.rounds=v;};
+
+/* VOLUME */
+const volumeSlider=$("volumeSlider"),volumeValue=$("volumeValue");
+function applyVolume(v){state.volume=Math.max(0,Math.min(100,v));volumeValue.textContent=state.volume+"%";volumeSlider.value=String(state.volume);fillRange(volumeSlider);}
+volumeSlider.oninput=e=>applyVolume(parseInt(e.target.value,10));
+$("btnCloseSettings").onclick=()=>closeModal("settingsModal");
+document.querySelectorAll(".modal").forEach(m=>{m.onclick=e=>{if(e.target===m)m.classList.remove("open");};});
+document.addEventListener("keydown",e=>{if(e.key==="Escape")document.querySelectorAll(".modal.open").forEach(m=>m.classList.remove("open"));});
+
+/* START SINGLE */
+function startSingle(side){
+  state.mode="single";state.side=side;state.opponentSide=side==="attack"?"defend":"attack";
+  state.round=1;
+  const base=state.startingUnits, atkU=base, defU=base+DEF_BONUS;
+  state.units=side==="defend"?defU:atkU;state.horses=state.startingHorses;
+  state.enemyUnits=side==="attack"?defU:atkU;state.enemyHorses=state.startingHorses;
+  state.selectedType="inf";state.selectedSize=5;state.troops=[];state.breakthrough=false;state.cossackSent=false;
+  state.raidBonusDefender=0;state.raidReductionAttacker=0;
+  state.ambushTroopId=null;state.ambushReleased=false;state.ambushBuffUntil=0;
+  state.kotelMode=false;state.kotelTriggered=false;state.battleTime=0;
+  updateNetStatus(null);showScreen("gameScreen");beginRound();
+}
+
+/* ROUND */
+function beginRound(){
+  if(battleAnim){cancelAnimationFrame(battleAnim);battleAnim=null;}
+  state.phase="prepare";state.troops=[];state.breakthrough=false;state.cossackSent=false;state.kotelTriggered=false;
+  state.ambushTroopId=null;state.ambushReleased=false;state.ambushBuffUntil=0;state.battleTime=0;
+  nextId=1;
+  if(state.round>1&&state.round<=state.rounds){
+    state.units+=REINF_U;state.horses+=REINF_H;
+    if(!isNetwork()){state.enemyUnits+=REINF_U;state.enemyHorses+=REINF_H;}
+    setTimeout(()=>showToast(`Прибыло подкрепление: +${REINF_U} юнитов, +${REINF_H} коней!`,2800),200);
+  }
+  if(isNetwork()){net.myReady=false;net.oppReady=false;net.oppPlacement=null;net.oppKotelMode=false;net.oppCossackSent=false;}
+  else generateEnemyArmy();
+  clampSelectedSize();
+  $("roundOverlay").classList.remove("show");
+  updateHUD();updatePrepPanel();
+  requestAnimationFrame(()=>{resizeCanvas();drawBoard();});
+}
+
+/* ENEMY AI */
+function generateEnemyArmy(){
+  if(!state.side)return;
+  const es=state.side==="attack"?"defend":"attack",b=zoneBounds(es),zS=b[0],zE=b[1],used=new Set();
+  function pick(){for(let i=0;i<800;i++){const c=zS+Math.floor(Math.random()*(zE-zS)),r=Math.floor(Math.random()*ROWS),k=c+":"+r;if(!used.has(k)){used.add(k);return{col:c,row:r};}}return null;}
+  let u=state.enemyUnits,h=state.enemyHorses;
+  function add(t,s){const c=pick();if(!c)return false;state.troops.push({id:nextId++,side:es,type:t,count:s,maxCount:s,col:c.col,row:c.row,x:c.col+0.5,alive:true,charged:false,cooldown:0,inCombat:false});return true;}
+  const cavLim=Math.min(3,Math.floor(Math.min(h,u)/10));
+  for(let i=0;i<cavLim;i++){if(h>=10&&u>=10){if(add("cav",10)){h-=10;u-=10;}}}
+  const plan=[20,20,20,10,10,5,5,5];
+  for(const s of plan){if(u>=s&&add("inf",s))u-=s;}
+  while(u>=5){const s=Math.min(10,u);if(!add("inf",s))break;u-=s;}
+  state.enemyUnits=u;state.enemyHorses=h;
+}
+
+/* HUD */
+function updateHUD(){
+  $("sideLabel").textContent=state.side?SIDE_NAMES[state.side]:"—";
+  $("roundLabel").textContent=`Раунд ${state.round} / ${state.rounds}`;
+  $("resLabel").textContent=String(state.units);$("resHorses").textContent=String(state.horses);
+  const btn=$("btnReady"),ph=$("phaseLabel");
+  if(state.phase==="prepare"){
+    if(isNetwork()&&net.myReady){btn.textContent="Ожидание...";btn.disabled=true;btn.style.display="";}
+    else{btn.textContent="Готов";btn.disabled=false;btn.style.display="";}
+    ph.textContent="Фаза подготовки";ph.classList.remove("battle");
+  }else if(state.phase==="battle"){
+    btn.textContent="Бой идёт...";btn.disabled=true;btn.style.display="";
+    ph.textContent="Бой идёт!";ph.classList.add("battle");
+  }else{btn.style.display="none";ph.textContent="Раунд завершён";ph.classList.add("battle");}
+}
+
+/* PREP PANEL */
+function canPlace(size){
+  if(state.phase!=="prepare")return false;
+  if(!size||size<1)return false;
+  if(state.units<size)return false;
+  if(state.selectedType==="cav"&&state.horses<size)return false;
+  if(state.side==="attack"&&state.round<state.rounds){if(state.units-size<MIN_ATK_RES)return false;}
+  return true;
+}
+function clampSelectedSize(){
+  const presets=[5,10,20,40];
+  if(!state.selectedSize||state.selectedSize<1)state.selectedSize=5;
+  if(presets.indexOf(state.selectedSize)!==-1&&!canPlace(state.selectedSize)){
+    const v=presets.filter(canPlace);if(v.length)state.selectedSize=v[v.length-1];
+  }
+}
+function updatePrepPanel(){
+  const p=$("prepPanel");
+  if(state.phase!=="prepare"){p.style.display="none";return;}
+  p.style.display="";
+  document.querySelectorAll("[data-type]").forEach(b=>b.classList.toggle("active",b.dataset.type===state.selectedType));
+  document.querySelectorAll("[data-size]").forEach(b=>{
+    const s=parseInt(b.dataset.size,10),ok=canPlace(s);
+    b.classList.toggle("insufficient",!ok);b.disabled=!ok;b.classList.toggle("active",ok&&s===state.selectedSize);
+  });
+  const cu=$("customSizeInput");
+  if(cu){
+    if(document.activeElement!==cu||cu.value==="")cu.value=String(state.selectedSize);
+    const cv=parseInt(cu.value,10);
+    cu.classList.toggle("invalid",isNaN(cv)||cv<1||!canPlace(cv));
+  }
+  const cb=$("btnCossacks");
+  if(state.side==="attack"&&!state.cossackSent&&state.units>=15){cb.style.display="";cb.disabled=false;cb.classList.remove("insufficient");}
+  else if(state.side==="attack"){cb.style.display="";cb.disabled=true;cb.classList.add("insufficient");}
+  else cb.style.display="none";
+  const kb=$("btnKotel");
+  if(state.side==="defend"){kb.style.display="";kb.classList.toggle("active",state.kotelMode);}
+  else kb.style.display="none";
+}
+document.querySelectorAll("[data-type]").forEach(b=>{b.onclick=()=>{state.selectedType=b.dataset.type;clampSelectedSize();updatePrepPanel();};});
+document.querySelectorAll("[data-size]").forEach(b=>{b.onclick=()=>{if(b.disabled)return;state.selectedSize=parseInt(b.dataset.size,10);$("customSizeInput").value=String(state.selectedSize);updatePrepPanel();};});
+$("customSizeInput").addEventListener("input",e=>{
+  const v=parseInt(e.target.value,10);
+  if(!isNaN(v)&&v>=1){state.selectedSize=v;updatePrepPanel();}
+  else{e.target.classList.toggle("invalid",true);document.querySelectorAll("[data-size]").forEach(b=>b.classList.remove("active"));}
+});
+$("customSizeInput").addEventListener("change",e=>{const v=parseInt(e.target.value,10);if(isNaN(v)||v<1)e.target.value=String(state.selectedSize);updatePrepPanel();});
+$("btnClear").onclick=()=>{
+  if(state.phase!=="prepare")return;
+  state.troops=state.troops.filter(t=>{
+    if(t.side===state.side&&t.alive){state.units+=t.count;if(t.type==="cav")state.horses+=t.count;return false;}
+    return true;
+  });
+  state.ambushTroopId=null;updateHUD();updatePrepPanel();drawBoard();
+};
+$("btnCossacks").onclick=()=>{
+  if(state.side!=="attack"||state.phase!=="prepare")return;
+  if(state.cossackSent||state.units<15)return;
+  state.units-=15;state.cossackSent=true;
+  const dmg=10+Math.floor(Math.random()*16);
+  let bonus=null;
+  if(Math.random()<0.25)bonus=Math.random()<0.5?"defender_boost":"attacker_weak";
+  if(isNetwork()){send({type:"cossackStrike",damage:dmg,bonus});}
+  else state.enemyUnits=Math.max(0,state.enemyUnits-dmg);
+  if(bonus==="defender_boost")state.raidBonusDefender+=5;
+  else if(bonus==="attacker_weak")state.raidReductionAttacker+=5;
+  const bm=bonus?(bonus==="defender_boost"?" Набеги на Оборону усилены (+5)!":" Набеги на вас ослаблены (-5)!"):"";
+  showToast(`Казаки нанесли ${dmg} урона.${bm}`,3000);
+  updateHUD();updatePrepPanel();
+};
+$("btnKotel").onclick=()=>{
+  if(state.side!=="defend"||state.phase!=="prepare")return;
+  state.kotelMode=!state.kotelMode;
+  showToast(state.kotelMode?"Котёл включён":"Котёл выключен",1600);
+  updatePrepPanel();
+};
+
+/* CANVAS */
+function resizeCanvas(){
+  const c=$("board");if(!c)return;
+  const wrap=$("boardWrap"),dpr=window.devicePixelRatio||1;
+  const aw=Math.max(300,wrap.clientWidth-32),ah=Math.max(150,wrap.clientHeight-32);
+  const sc=Math.min(aw/LW,ah/LH);
+  const cw=LW*sc,ch=LH*sc;
+  c.style.width=cw+"px";c.style.height=ch+"px";
+  c.width=Math.round(cw*dpr);c.height=Math.round(ch*dpr);
+  c._scale=sc;c._dpr=dpr;
+}
+function drawBoard(){
+  const c=$("board");if(!c)return;
+  const ctx=c.getContext("2d"),dpr=c._dpr||1,sc=c._scale||1;
+  ctx.setTransform(sc*dpr,0,0,sc*dpr,0,0);
+  ctx.clearRect(0,0,LW,LH);
+  for(let r=0;r<ROWS;r++)for(let col=0;col<COLS;col++){
+    const l=(r+col)%2===0;let color;
+    if(col<NEUTRAL)color=l?"#3d2b26":"#35241f";
+    else if(col<DEF_START)color=l?"#2f3d27":"#28331f";
+    else color=l?"#2b3138":"#242a30";
+    ctx.fillStyle=color;ctx.fillRect(col*CELL,r*CELL,CELL,CELL);
+    ctx.fillStyle="rgba(255,255,255,0.022)";ctx.fillRect(col*CELL,r*CELL,CELL,5);
+  }
+  ctx.strokeStyle="rgba(0,0,0,.45)";ctx.lineWidth=1;
+  for(let col=0;col<=COLS;col++){ctx.beginPath();ctx.moveTo(col*CELL+0.5,0);ctx.lineTo(col*CELL+0.5,LH);ctx.stroke();}
+  for(let r=0;r<=ROWS;r++){ctx.beginPath();ctx.moveTo(0,r*CELL+0.5);ctx.lineTo(LW,r*CELL+0.5);ctx.stroke();}
+  ctx.save();ctx.setLineDash([7,6]);ctx.lineWidth=2;ctx.strokeStyle="rgba(201,162,39,.55)";
+  [NEUTRAL,DEF_START].forEach(col=>{ctx.beginPath();ctx.moveTo(col*CELL,0);ctx.lineTo(col*CELL,LH);ctx.stroke();});
+  ctx.restore();
+  state.troops.forEach(t=>{if(t.alive)drawTroop(ctx,t);});
+  if(state.phase==="prepare"&&state.side){
+    const es=state.side==="attack"?"defend":"attack",b=zoneBounds(es);
+    const fx=b[0]*CELL,fw=(b[1]-b[0])*CELL;
+    ctx.fillStyle="#000";ctx.fillRect(fx,0,fw,LH);
+    ctx.save();ctx.setLineDash([9,7]);ctx.lineWidth=2;ctx.strokeStyle="rgba(255,255,255,.13)";
+    ctx.strokeRect(fx+7,7,fw-14,LH-14);ctx.restore();
+    ctx.font="700 "+Math.round(CELL*0.42)+"px Georgia,serif";
+    ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillStyle="#888";
+    ctx.fillText("Вражеская",fx+fw/2,LH/2-CELL*0.55);ctx.fillText("территория",fx+fw/2,LH/2);ctx.fillText("скрыта",fx+fw/2,LH/2+CELL*0.55);
+  }
+  ctx.strokeStyle="#8f1a1a";ctx.lineWidth=4;ctx.strokeRect(2,2,LW-4,LH-4);
+  ctx.strokeStyle="rgba(201,162,39,.35)";ctx.lineWidth=1;ctx.strokeRect(6.5,6.5,LW-13,LH-13);
+}
+function drawTroop(ctx,t){
+  const cx=t.x*CELL,cy=(t.row+0.5)*CELL,r=CELL*0.4;
+  if(t.side==="defend"&&state.phase==="battle"&&state.battleTime<state.ambushBuffUntil&&state.ambushReleased){
+    ctx.beginPath();ctx.arc(cx,cy,r+3,0,Math.PI*2);ctx.strokeStyle="rgba(255,215,0,.95)";ctx.lineWidth=3;ctx.stroke();
+  }
+  if(t.id===state.ambushTroopId&&!state.ambushReleased&&state.phase==="battle"){
+    ctx.beginPath();ctx.arc(cx,cy,r+4,0,Math.PI*2);ctx.setLineDash([4,4]);ctx.strokeStyle="rgba(255,215,0,.7)";ctx.lineWidth=2;ctx.stroke();ctx.setLineDash([]);
+  }
+  ctx.beginPath();ctx.arc(cx,cy+2,r,0,Math.PI*2);ctx.fillStyle="rgba(0,0,0,.5)";ctx.fill();
+  const g=ctx.createRadialGradient(cx-r*0.3,cy-r*0.4,r*0.1,cx,cy,r);
+  if(t.side==="attack"){g.addColorStop(0,"#e0574f");g.addColorStop(1,"#7d1410");}
+  else{g.addColorStop(0,"#6f9fd8");g.addColorStop(1,"#1d3c66");}
+  ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.fillStyle=g;ctx.fill();
+  ctx.lineWidth=1.6;ctx.strokeStyle=t.side==="attack"?"#f0b090":"#bcd6f5";ctx.stroke();
+  ctx.strokeStyle="rgba(255,255,255,.9)";ctx.lineWidth=1.6;ctx.lineCap="round";
+  const iy=cy-r*0.25;
+  if(t.type==="inf"){
+    ctx.beginPath();ctx.moveTo(cx,iy-r*0.35);ctx.lineTo(cx,iy+r*0.35);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(cx-r*0.22,iy+r*0.05);ctx.lineTo(cx+r*0.22,iy+r*0.05);ctx.stroke();
+  }else{
+    ctx.beginPath();ctx.moveTo(cx-r*0.35,iy+r*0.3);ctx.lineTo(cx+r*0.35,iy-r*0.35);ctx.stroke();
+    ctx.beginPath();ctx.arc(cx-r*0.22,iy+r*0.18,r*0.13,0,Math.PI*2);ctx.stroke();
+  }
+  const bW=r*1.1,bH=r*0.52,bY=cy+r*0.48;
+  ctx.fillStyle="rgba(0,0,0,.75)";
+  ctx.fillRect(cx-bW/2,bY-bH/2,bW,bH);
+  ctx.font="bold "+Math.round(CELL*0.26)+"px Georgia,serif";
+  ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillStyle="#fff";
+  ctx.fillText(t.count,cx,bY+0.5);
+}
+
+/* PLACEMENT */
+function screenToCell(x,y){
+  const c=$("board"),rect=c.getBoundingClientRect();
+  const lx=(x-rect.left)/rect.width*LW,ly=(y-rect.top)/rect.height*LH;
+  return{col:Math.floor(lx/CELL),row:Math.floor(ly/CELL)};
+}
+$("board").addEventListener("click",e=>{
+  if(state.phase!=="prepare"||!state.side||(isNetwork()&&net.myReady))return;
+  const cell=screenToCell(e.clientX,e.clientY);
+  if(cell.col<0||cell.col>=COLS||cell.row<0||cell.row>=ROWS)return;
+  const b=zoneBounds(state.side);
+  if(cell.col<b[0]||cell.col>=b[1])return;
+  if(state.troops.some(t=>t.alive&&t.col===cell.col&&t.row===cell.row))return;
+  const size=state.selectedSize,type=state.selectedType;
+  if(!canPlace(size)){
+    if(state.side==="attack"&&state.round<state.rounds&&state.units-size<MIN_ATK_RES)showToast(`Атакующий должен оставить ${MIN_ATK_RES} юнитов в резерве!`);
+    else showToast("Недостаточно ресурсов");
+    return;
+  }
+  state.units-=size;if(type==="cav")state.horses-=size;
+  const nt={id:nextId++,side:state.side,type,count:size,maxCount:size,col:cell.col,row:cell.row,x:cell.col+0.5,alive:true,charged:false,cooldown:0,inCombat:false};
+  state.troops.push(nt);
+  if(state.side==="defend"&&type==="cav"&&cell.col===COLS-1&&!state.ambushTroopId){
+    state.ambushTroopId=nt.id;showToast("Кавалерия в засаде!",2200);
+  }
+  updateHUD();updatePrepPanel();drawBoard();
+});
+$("board").addEventListener("contextmenu",e=>{
+  e.preventDefault();
+  if(state.phase!=="prepare"||!state.side||(isNetwork()&&net.myReady))return;
+  const cell=screenToCell(e.clientX,e.clientY);
+  const i=state.troops.findIndex(t=>t.alive&&t.side===state.side&&t.col===cell.col&&t.row===cell.row);
+  if(i===-1)return;
+  const t=state.troops[i];
+  state.units+=t.count;if(t.type==="cav")state.horses+=t.count;
+  if(t.id===state.ambushTroopId)state.ambushTroopId=null;
+  state.troops.splice(i,1);
+  updateHUD();updatePrepPanel();drawBoard();
+});
+
+/* BATTLE */
+function startBattle(){
+  state.phase="battle";state.battleTime=0;
+  state.ambushReleased=false;state.ambushBuffUntil=0;state.kotelTriggered=false;
+  const a=state.troops.find(t=>t.alive&&t.side==="defend"&&t.col===COLS-1&&t.type==="cav");
+  state.ambushTroopId=a?a.id:null;
+  state.troops.forEach(t=>{t.charged=false;t.cooldown=0;t.inCombat=false;});
+  updateHUD();updatePrepPanel();drawBoard();
+  lastBattleTime=performance.now();battleAnim=requestAnimationFrame(battleTick);
+}
+function battleTick(now){
+  const dt=Math.min(0.1,(now-lastBattleTime)/1000);lastBattleTime=now;
+  updateBattle(dt);drawBoard();
+  if(state.phase==="battle")battleAnim=requestAnimationFrame(battleTick);
+}
+function updateBattle(dt){
+  state.battleTime+=dt;
+  if(state.ambushTroopId&&!state.ambushReleased&&state.battleTime>=2.5){
+    const at=state.troops.find(t=>t.id===state.ambushTroopId&&t.alive);
+    if(at){state.ambushReleased=true;state.ambushBuffUntil=state.battleTime+4;showToast("Эффект неожиданности! +40% урона на 4с!",2800);}
+    else state.ambushTroopId=null;
+  }
+  state.troops.forEach(t=>{
+    if(!t.alive)return;
+    let nearest=null,nd=Infinity;
+    state.troops.forEach(e=>{
+      if(!e.alive||e.side===t.side)return;
+      const dx=e.x-t.x,dy=e.row-t.row,d=Math.sqrt(dx*dx+dy*dy);
+      if(d<nd){nearest=e;nd=d;}
+    });
+    t.inCombat=nearest&&nd<RANGE;
+    if(t.side==="attack"&&!t.inCombat){t.x+=2.0*dt;if(t.x>=COLS-0.5){t.x=COLS-0.5;state.breakthrough=true;}}
+    if(t.side==="defend"&&state.kotelMode&&(t.row===0||t.row===ROWS-1)&&!t.inCombat){if(t.x>13.0)t.x-=1.2*dt;}
+    if(t.id===state.ambushTroopId&&state.ambushReleased&&!t.inCombat){t.x-=3.0*dt;if(t.x<1)t.x=1;}
+  });
+  state.troops.forEach(t=>{
+    if(!t.alive||!t.inCombat){t.cooldown=0;return;}
+    t.cooldown-=dt;if(t.cooldown>0)return;t.cooldown+=0.5;
+    let target=null,nd=Infinity;
+    state.troops.forEach(e=>{
+      if(!e.alive||e.side===t.side)return;
+      const dx=e.x-t.x,dy=e.row-t.row,d=Math.sqrt(dx*dx+dy*dy);
+      if(d<RANGE&&d<nd){target=e;nd=d;}
+    });
+    if(!target)return;
+    let dmg=Math.max(1,Math.ceil(t.count*0.2));
+    if(t.type==="cav"&&!t.charged){dmg*=2;t.charged=true;}
+    if(t.side==="defend"&&state.battleTime<state.ambushBuffUntil)dmg=Math.ceil(dmg*1.4);
+    target.count-=dmg;
+    if(target.count<=0){target.count=0;target.alive=false;}
+  });
+  if(state.kotelMode&&!state.kotelTriggered)checkKotel();
+  if(!state.kotelTriggered){
+    const atk=state.troops.some(t=>t.alive&&t.side==="attack");
+    const def=state.troops.some(t=>t.alive&&t.side==="defend");
+    if(state.breakthrough||!atk||!def)endBattle(false);
+  }
+}
+function checkKotel(){
+  const dT=state.troops.find(t=>t.alive&&t.side==="defend"&&t.row===0&&t.x<=13.0);
+  const dB=state.troops.find(t=>t.alive&&t.side==="defend"&&t.row===ROWS-1&&t.x<=13.0);
+  if(!dT||!dB)return;
+  const aT=state.troops.some(t=>t.alive&&t.side==="attack"&&t.row===0);
+  const aB=state.troops.some(t=>t.alive&&t.side==="attack"&&t.row===ROWS-1);
+  if(aT||aB)return;
+  triggerKotel();
+}
+function triggerKotel(){
+  if(state.kotelTriggered)return;
+  state.kotelTriggered=true;
+  const fl=$("kotelFlash");fl.classList.add("show");setTimeout(()=>fl.classList.remove("show"),2000);
+  let cap=0;
+  state.troops.forEach(t=>{
+    if(!t.alive||t.side!=="attack")return;
+    cap+=Math.floor(t.count*0.3);t.count=0;t.alive=false;
+  });
+  if(state.side==="defend")state.units+=cap;
+  else if(!isNetwork())state.enemyUnits+=cap;
+  updateHUD();
+  setTimeout(()=>endBattle(true),1800);
+}
+function endBattle(forceKotel){
+  if(battleAnim){cancelAnimationFrame(battleAnim);battleAnim=null;}
+  state.phase="result";
+  if(!forceKotel){
+    state.troops.forEach(t=>{
+      if(!t.alive)return;
+      if(t.side===state.side){state.units+=t.count;if(t.type==="cav")state.horses+=t.count;}
+      else if(!isNetwork()){state.enemyUnits+=t.count;if(t.type==="cav")state.enemyHorses+=t.count;}
+    });
+  }
+  const atk=state.troops.some(t=>t.alive&&t.side==="attack");
+  const def=state.troops.some(t=>t.alive&&t.side==="defend");
+  let title,text;
+  if(forceKotel){title="ВРАГ В КОТЛЕ!";text="Оборона окружила и разгромила атакующих!\n70% врагов уничтожено, 30% взято в плен.";}
+  else if(state.breakthrough){title="Прорыв!";text="Атакующие прорвались!";}
+  else if(!def&&atk){title="Победа атакующих!";text="Оборона смятена.";}
+  else if(!atk&&def){title="Победа обороняющихся!";text="Атака отбита.";}
+  else{title="Раунд завершён";text="Все отряды уничтожены.";}
+  if(isNetwork()){
+    if(net.isHost)hostFinishRound(title,text);
+    else waitHostRoundResult(title,text);
+  }else{
+    if(state.round<state.rounds){const rl=applyRaidsSingle();text+="\n\n"+rl.join("\n");}
+    $("roundResultTitle").textContent=title;$("roundResultText").textContent=text;
+    $("roundOverlay").classList.add("show");
+    updateHUD();updatePrepPanel();drawBoard();
+  }
+}
+function hostFinishRound(title,text){
+  const raids=computeRaids();applyOwnRaid(raids);
+  send({type:"roundEnd",title,text,raids});
+  const rt=formatRaidText(raids);
+  $("roundResultTitle").textContent=title;
+  $("roundResultText").textContent=text+(rt?"\n\n"+rt:"");
+  $("roundOverlay").classList.add("show");
+  updateHUD();updatePrepPanel();drawBoard();
+}
+function waitHostRoundResult(title,text){
+  $("roundResultTitle").textContent=title;
+  $("roundResultText").textContent="Синхронизация с хостом...";
+  $("roundOverlay").classList.add("show");
+}
+function computeRaids(){
+  if(state.raidStrength===0)return{toAttacker:0,toDefender:0,off:true};
+  const mn=Math.ceil(state.raidStrength*0.33),rg=state.raidStrength-mn+1;
+  let tA=mn+Math.floor(Math.random()*rg),tD=mn+Math.floor(Math.random()*rg);
+  tD=Math.max(0,tD+state.raidBonusDefender);tA=Math.max(0,tA-state.raidReductionAttacker);
+  return{toAttacker:tA,toDefender:tD,off:false};
+}
+function applyOwnRaid(r){if(r.off)return;const d=state.side==="attack"?r.toAttacker:r.toDefender;state.units=Math.max(0,state.units-d);}
+function formatRaidText(r){
+  if(r.off)return "Набеги отключены.";
+  const my=state.side==="attack"?r.toAttacker:r.toDefender,en=state.side==="attack"?r.toDefender:r.toAttacker;
+  return `Набег на вас: −${my} юнитов.\nНабег на врага: −${en} юнитов.`;
+}
+function applyRaidsSingle(){
+  if(state.raidStrength===0)return["Набеги отключены."];
+  const mn=Math.ceil(state.raidStrength*0.33),rg=state.raidStrength-mn+1;
+  let aR=mn+Math.floor(Math.random()*rg),dR=mn+Math.floor(Math.random()*rg);
+  dR=Math.max(0,dR+state.raidBonusDefender);aR=Math.max(0,aR-state.raidReductionAttacker);
+  const log=[];
+  if(state.side==="attack"){
+    const a=Math.min(state.units,aR);state.units-=a;log.push(`Набег на Атакующих: −${a} (резерв: ${state.units})`);
+    const d=Math.min(state.enemyUnits,dR);state.enemyUnits-=d;log.push(`Набег на Оборону: −${d}`);
+  }else{
+    const d=Math.min(state.units,dR);state.units-=d;log.push(`Набег на Оборону: −${d} (резерв: ${state.units})`);
+    const a=Math.min(state.enemyUnits,aR);state.enemyUnits-=a;log.push(`Набег на Атакующих: −${a}`);
+  }
+  return log;
+}
+
+/* READY / NEXT */
+$("btnReady").onclick=()=>{
+  if(state.phase!=="prepare")return;
+  const own=state.troops.filter(t=>t.side===state.side&&t.alive);
+  if(own.length===0){showToast("Сначала расставьте войска!");return;}
+  if(isNetwork()){
+    net.myReady=true;
+    const pl=own.map(t=>({col:t.col,row:t.row,type:t.type,count:t.count}));
+    send({type:"ready",placement:pl,kotel:state.kotelMode,cossackSent:state.cossackSent});
+    updateHUD();
+    if(net.oppReady)startNetworkBattle();
+  }else startBattle();
+};
+$("btnNextRound").onclick=()=>{
+  if(state.phase!=="result")return;
+  if(isNetwork()){advanceRoundLocal();send({type:"advanceRound"});}
+  else advanceRoundLocal();
+};
+function advanceRoundLocal(){
+  if(state.round>=state.rounds){
+    showToast("Матч завершён!",2200);
+    setTimeout(()=>{cleanupNet();state.side=null;state.round=1;state.phase="prepare";state.troops=[];showScreen("mainMenu");},1800);
+    return;
+  }
+  state.round++;$("roundOverlay").classList.remove("show");beginRound();
+}
+$("btnToMain").onclick=()=>{
+  if(battleAnim){cancelAnimationFrame(battleAnim);battleAnim=null;}
+  cleanupNet();state.side=null;state.round=1;state.phase="prepare";state.troops=[];
+  showScreen("mainMenu");
+};
+
+/* LOBBY */
+function resetLobby(){
+  $("hostInfo").style.display="none";
+  $("hostStatus").textContent="Ожидание гостя...";$("hostStatus").className="lobby-status";
+  $("guestStatus").textContent="Введите код комнаты";$("guestStatus").className="lobby-status";
+  $("joinCodeInput").value="";
+  $("hostUnits").value=String(state.startingUnits);
+  $("hostHorses").value=String(state.startingHorses);
+  $("hostRaid").value=String(state.raidStrength);
+}
+function genRoomId(){const c="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";let id="";for(let i=0;i<6;i++)id+=c[Math.floor(Math.random()*c.length)];return id;}
+function cleanupNet(){
+  if(net.conn){try{net.conn.close();}catch(e){}net.conn=null;}
+  if(net.peer){try{net.peer.destroy();}catch(e){}net.peer=null;}
+  net.connected=false;net.roomId=null;net.isHost=false;net.myReady=false;net.oppReady=false;net.oppPlacement=null;
+  updateNetStatus(null);
+}
+$("btnCreateRoom").onclick=()=>{
+  if(net.peer){try{net.peer.destroy();}catch(e){}net.peer=null;}
+  const id=genRoomId();net.isHost=true;net.roomId=id;
+  $("roomCode").textContent=id;$("hostInfo").style.display="block";
+  $("hostStatus").textContent="Подключение к серверу...";$("hostStatus").className="lobby-status";
+  let peer;
+  try{peer=new Peer(id);}catch(e){$("hostStatus").textContent="Ошибка: "+e.message;$("hostStatus").className="lobby-status err";return;}
+  net.peer=peer;
+  peer.on("open",()=>{$("hostStatus").textContent="Комната создана. Ожидание гостя...";updateNetStatus("waiting");});
+  peer.on("connection",conn=>{
+    net.conn=conn;
+    conn.on("open",()=>{
+      net.connected=true;
+      $("hostStatus").textContent="Гость подключился!";$("hostStatus").className="lobby-status ok";
+      const hs=$("hostSide").value;
+      const st={
+        rounds:parseInt($("hostRounds").value,10),
+        units:Math.max(10,parseInt($("hostUnits").value,10)||state.startingUnits),
+        horses:Math.max(0,parseInt($("hostHorses").value,10)||state.startingHorses),
+        raidStrength:Math.max(0,parseInt($("hostRaid").value,10)||state.raidStrength)
+      };
+      conn.send({type:"start",hostSide:hs,settings:st});
+      setTimeout(()=>{startNetworkGame(hs,st,true);},300);
+    });
+    conn.on("data",handleNetMessage);
+    conn.on("close",()=>{net.connected=false;updateNetStatus("disconnected");showToast("Соперник отключился",3000);});
+    conn.on("error",()=>{net.connected=false;updateNetStatus("disconnected");});
+  });
+  peer.on("error",err=>{$("hostStatus").textContent="Ошибка: "+err.type;$("hostStatus").className="lobby-status err";});
+};
+$("btnCopyCode").onclick=()=>{const c=$("roomCode").textContent;if(navigator.clipboard){navigator.clipboard.writeText(c).then(()=>showToast("Код скопирован!"));}else showToast("Код: "+c,3000);};
+$("btnJoinRoom").onclick=()=>{
+  const code=$("joinCodeInput").value.trim().toUpperCase();
+  if(!code||code.length<4){$("guestStatus").textContent="Введите корректный код";$("guestStatus").className="lobby-status err";return;}
+  if(net.peer){try{net.peer.destroy();}catch(e){}net.peer=null;}
+  net.isHost=false;net.roomId=code;
+  $("guestStatus").textContent="Подключение...";$("guestStatus").className="lobby-status";
+  let peer;
+  try{peer=new Peer();}catch(e){$("guestStatus").textContent="Ошибка: "+e.message;$("guestStatus").className="lobby-status err";return;}
+  net.peer=peer;
+  peer.on("open",()=>{
+    const conn=peer.connect(code);net.conn=conn;
+    conn.on("open",()=>{net.connected=true;$("guestStatus").textContent="Подключено. Ожидание старта...";$("guestStatus").className="lobby-status ok";updateNetStatus("waiting");});
+    conn.on("data",handleNetMessage);
+    conn.on("close",()=>{net.connected=false;updateNetStatus("disconnected");showToast("Соперник отключился",3000);});
+    conn.on("error",()=>{net.connected=false;updateNetStatus("disconnected");});
+  });
+  peer.on("error",err=>{$("guestStatus").textContent="Ошибка: "+err.type;$("guestStatus").className="lobby-status err";});
+};
+
+/* MESSAGING */
+function send(m){if(net.conn&&net.connected){try{net.conn.send(m);}catch(e){console.warn("send",e);}}}
+function handleNetMessage(msg){
+  if(!msg||!msg.type)return;
+  if(msg.type==="start"){
+    const mySide=msg.hostSide==="attack"?"defend":"attack";
+    startNetworkGame(mySide,msg.settings,false);
+  }else if(msg.type==="cossackStrike"){
+    state.units=Math.max(0,state.units-msg.damage);
+    if(msg.bonus==="defender_boost")state.raidBonusDefender+=5;
+    else if(msg.bonus==="attacker_weak")state.raidReductionAttacker+=5;
+    showToast(`Вражеские казаки: −${msg.damage} вашему резерву.`,3000);
+    updateHUD();updatePrepPanel();
+  }else if(msg.type==="ready"){
+    net.oppReady=true;net.oppPlacement=msg.placement;net.oppKotelMode=msg.kotel;net.oppCossackSent=msg.cossackSent;
+    if(net.myReady)startNetworkBattle();
+    else showToast("Соперник готов. Завершайте расстановку.",1800);
+  }else if(msg.type==="roundEnd"){
+    if(net.isHost)return;
+    if(msg.raids&&!msg.raids.off){
+      const myDmg=state.side==="attack"?msg.raids.toAttacker:msg.raids.toDefender;
+      state.units=Math.max(0,state.units-myDmg);
+    }
+    const myD=msg.raids&&!msg.raids.off?(state.side==="attack"?msg.raids.toAttacker:msg.raids.toDefender):0;
+    const enD=msg.raids&&!msg.raids.off?(state.side==="attack"?msg.raids.toDefender:msg.raids.toAttacker):0;
+    const rt=msg.raids&&msg.raids.off?"Набеги отключены.":`Набег на вас: −${myD}.\nНабег на врага: −${enD}.`;
+    $("roundResultTitle").textContent=msg.title;
+    $("roundResultText").textContent=msg.text+(msg.raids?"\n\n"+rt:"");
+    updateHUD();updatePrepPanel();drawBoard();
+  }else if(msg.type==="advanceRound"){
+    if(state.phase==="result")advanceRoundLocal();
+  }
+}
+function startNetworkGame(mySide,st,asHost){
+  state.mode="network";state.side=mySide;state.opponentSide=mySide==="attack"?"defend":"attack";
+  state.rounds=st.rounds;state.startingUnits=st.units;state.startingHorses=st.horses;state.raidStrength=st.raidStrength;
+  state.round=1;
+  const base=st.units,atkU=base,defU=base+DEF_BONUS;
+  state.units=mySide==="defend"?defU:atkU;state.horses=st.horses;
+  state.enemyUnits=mySide==="attack"?defU:atkU;state.enemyHorses=st.horses;
+  state.selectedType="inf";state.selectedSize=5;state.troops=[];state.breakthrough=false;state.cossackSent=false;
+  state.raidBonusDefender=0;state.raidReductionAttacker=0;
+  state.ambushTroopId=null;state.ambushReleased=false;state.ambushBuffUntil=0;
+  state.kotelMode=false;state.kotelTriggered=false;state.battleTime=0;
+  net.myReady=false;net.oppReady=false;net.oppPlacement=null;net.oppKotelMode=false;net.oppCossackSent=false;
+  updateNetStatus("connected");showScreen("gameScreen");beginRound();
+  showToast(`Игра началась! Вы — ${SIDE_NAMES[mySide]}.`,2500);
+}
+function startNetworkBattle(){
+  state.troops=state.troops.filter(t=>t.side===state.side&&t.alive);
+  if(net.oppPlacement){
+    net.oppPlacement.forEach(p=>{
+      state.troops.push({id:nextId++,side:state.opponentSide,type:p.type,count:p.count,maxCount:p.count,col:p.col,row:p.row,x:p.col+0.5,alive:true,charged:false,cooldown:0,inCombat:false});
+    });
+  }
+  if(state.side==="attack")state.kotelMode=net.oppKotelMode;
+  startBattle();
+}
+
+/* RESIZE */
+let resizeT=null;
+window.addEventListener("resize",()=>{
+  clearTimeout(resizeT);
+  resizeT=setTimeout(()=>{if($("gameScreen").classList.contains("active")){resizeCanvas();drawBoard();}},90);
+});
+
+/* INIT */
+(function init(){
+  let saved=50;
+  try{const s=localStorage.getItem("temw_volume");if(s!==null)saved=parseInt(s,10)||50;}catch(e){}
+  applyVolume(saved);
+  volumeSlider.oninput=e=>{
+    applyVolume(parseInt(e.target.value,10));
+    try{localStorage.setItem("temw_volume",String(state.volume));}catch(e){}
+  };
+  updateHUD();updatePrepPanel();resetLobby();
+})();
+</script>
+</body>
+</html>
