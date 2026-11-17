@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>The Era of Medieval Wars</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&display=swap" rel="stylesheet">
+<style>
+:root{--red:#8f1a1a;--redb:#d32f2f;--gold:#c9a227;--text:#e6e1d8}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;height:100%;overflow:hidden}
+body{font-family:Georgia,'Times New Roman',serif;color:var(--text);background-color:#2b2b2b;
+background-image:radial-gradient(circle at 18% 8%,rgba(255,255,255,.055),transparent 45%),
+radial-gradient(circle at 82% 92%,rgba(0,0,0,.5),transparent 55%),
+repeating-linear-gradient(45deg,rgba(255,255,255,.014) 0 2px,transparent 2px 7px),
+repeating-linear-gradient(-45deg,rgba(0,0,0,.05) 0 3px,transparent 3px 9px);user-select:none}
+.screen{position:fixed;inset:0;display:none}.screen.active{display:block}
+#gameScreen.active{display:flex;flex-direction:column}
+.btn{font-family:inherit;font-size:20px;letter-spacing:1px;text-transform:uppercase;color:var(--text);
+padding:13px 30px;border:2px solid var(--red);border-radius:6px;cursor:pointer;
+background:linear-gradient(180deg,#4b4b4b,#2c2c2c);
+box-shadow:inset 0 1px 0 rgba(255,255,255,.1),inset 0 -2px 6px rgba(0,0,0,.45),0 5px 12px rgba(0,0,0,.55);
+transition:transform .12s,background .18s,border-color .18s,box-shadow .18s}
+.btn:hover{background:linear-gradient(180deg,#5e5e5e,#383838);border-color:var(--redb);transform:translateY(-2px);
+box-shadow:inset 0 1px 0 rgba(255,255,255,.14),0 8px 18px rgba(0,0,0,.6),0 0 16px rgba(211,47,47,.35)}
+.btn:active{transform:translateY(1px);box-shadow:inset 0 3px 10px rgba(0,0,0,.65)}
+.btn:disabled{opacity:.5;cursor:default;transform:none!important}
+.btn.big{font-size:27px;padding:20px 58px}.btn.small{font-size:15px;padding:9px 18px}
+#mainMenu .title{position:absolute;top:34px;left:48px;margin:0;max-width:62%;
+font-family:'Cinzel Decorative',Georgia,serif;font-weight:900;font-size:clamp(26px,4.6vw,62px);
+line-height:1.08;letter-spacing:3px;color:#b3151a;
+text-shadow:0 0 22px rgba(190,25,25,.55),0 0 60px rgba(160,15,15,.3),3px 3px 0 #140505,-1px -1px 0 rgba(255,120,120,.25)}
+.bottom-left{position:absolute;left:48px;bottom:40px;display:flex;align-items:center;gap:22px}
+.corner-br{position:absolute;right:40px;bottom:32px}
+.corner-tl{position:absolute;left:32px;top:28px;z-index:5}
+.center{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);display:flex;
+align-items:center;justify-content:center;gap:40px;flex-wrap:wrap;width:100%;padding:0 20px}
+.bottom-center{position:absolute;left:50%;bottom:34px;transform:translateX(-50%)}
+.topbar{display:flex;flex-wrap:wrap;align-items:center;gap:10px 22px;padding:12px 22px;
+background:linear-gradient(180deg,#3b3b3b,#232323);border-bottom:3px solid var(--red);
+box-shadow:0 5px 18px rgba(0,0,0,.65);flex-shrink:0}
+.topbar .item{font-size:16px;letter-spacing:.6px;white-space:nowrap}
+.topbar .item b{color:var(--gold);font-weight:normal}
+.topbar .sep{width:2px;height:22px;background:rgba(255,255,255,.12)}
+.topbar .spacer{flex:1 1 16px}
+.phase{color:var(--gold);text-transform:uppercase;font-size:13px!important;letter-spacing:1.4px!important;
+padding:4px 12px;border:1px solid rgba(201,162,39,.45);border-radius:4px;
+background:rgba(201,162,39,.07);white-space:nowrap}
+.phase.battle{color:#ffb4a2;border-color:rgba(211,47,47,.6);background:rgba(211,47,47,.12)}
+.ready-btn{font-size:18px;padding:11px 30px;border-color:var(--gold);
+background:linear-gradient(180deg,#7d2323,#4a1212);color:#ffe9c9;animation:pulse 2s ease-in-out infinite}
+.ready-btn:hover{border-color:#f0d06a;background:linear-gradient(180deg,#9a2b2b,#5c1616)}
+.ready-btn:disabled{animation:none;opacity:.7}
+@keyframes pulse{0%,100%{box-shadow:inset 0 1px 0 rgba(255,255,255,.12),0 6px 16px rgba(0,0,0,.55),0 0 8px rgba(201,162,39,.25)}
+50%{box-shadow:inset 0 1px 0 rgba(255,255,255,.12),0 6px 16px rgba(0,0,0,.55),0 0 24px rgba(201,162,39,.7)}}
+.prep-panel{display:flex;align-items:center;gap:12px;padding:9px 22px;
+background:linear-gradient(180deg,#2e2e2e,#1e1e1e);border-bottom:2px solid #444;flex-shrink:0;
+flex-wrap:wrap;min-height:48px}
+.prep-group{display:flex;gap:6px;align-items:center}
+.prep-label{color:#999;font-size:13px;letter-spacing:.5px;white-space:nowrap}
+.prep-sep{width:1px;height:24px;background:#444}
+.prep-btn{font-family:inherit;font-size:14px;padding:6px 14px;color:var(--text);
+background:linear-gradient(180deg,#3a3a3a,#252525);border:1px solid #555;border-radius:4px;
+cursor:pointer;transition:all .15s;min-width:36px;letter-spacing:.3px}
+.prep-btn:hover:not(:disabled){border-color:var(--redb);background:linear-gradient(180deg,#4a4a4a,#333)}
+.prep-btn.active{border-color:var(--gold);background:linear-gradient(180deg,#7d2323,#4a1212);
+color:#ffe9c9;box-shadow:0 0 10px rgba(201,162,39,.4)}
+.prep-btn.insufficient{background:linear-gradient(180deg,#5a1a1a,#2e0808)!important;
+border-color:#7a1010!important;color:#a06060!important;opacity:.55;cursor:not-allowed!important}
+.clear-btn{border-color:#666}.clear-btn:hover:not(:disabled){border-color:var(--redb)!important;color:#ffd0c0}
+.cossack-btn{border-color:#8a6d2a;color:#f0d590}
+.cossack-btn:hover:not(:disabled){border-color:#f0d06a!important;color:#fff0c0!important}
+.kotel-btn{border-color:#8a4a4a;color:#e0b0b0}
+.kotel-btn:hover:not(:disabled){border-color:var(--redb)!important;color:#ffd0c0!important}
+.prep-hint{color:#666;font-size:12px;font-style:italic;margin-left:auto;white-space:nowrap}
+.board-wrap{flex:1;position:relative;display:flex;align-items:center;justify-content:center;
+padding:16px;min-height:0;overflow:hidden}
+#board{display:block;border-radius:5px;box-shadow:0 14px 40px rgba(0,0,0,.7),0 0 0 1px rgba(0,0,0,.85);cursor:pointer}
+.round-overlay{position:absolute;inset:0;display:none;align-items:center;justify-content:center;
+background:rgba(0,0,0,.72);z-index:300;padding:20px}
+.round-overlay.show{display:flex}
+.round-result-card{background:linear-gradient(180deg,#3a3a3a,#262626);border:2px solid var(--gold);
+border-radius:12px;padding:34px 44px;text-align:center;max-width:520px;
+box-shadow:0 20px 60px rgba(0,0,0,.9),0 0 30px rgba(201,162,39,.2);animation:pop .2s}
+@keyframes pop{from{transform:scale(.94);opacity:0}to{transform:scale(1);opacity:1}}
+.round-result-card h2{margin:0 0 14px;font-family:'Cinzel Decorative',Georgia,serif;font-size:26px;
+color:var(--gold);text-shadow:0 2px 0 #000;letter-spacing:1px}
+.round-result-card p{margin:0 0 24px;font-size:16px;color:#ccc;line-height:1.55;white-space:pre-line;text-align:left}
+.kotel-flash{position:fixed;inset:0;display:none;align-items:center;justify-content:center;
+background:rgba(0,0,0,.85);z-index:900;pointer-events:none}
+.kotel-flash.show{display:flex;animation:kotelFade 2s ease-out}
+.kotel-text{font-family:'Cinzel Decorative',Georgia,serif;font-size:clamp(40px,10vw,120px);
+font-weight:900;color:#ff2020;letter-spacing:4px;
+text-shadow:0 0 30px rgba(255,50,50,.9),0 0 80px rgba(255,0,0,.6),4px 4px 0 #000;
+animation:kotelPulse .5s ease-in-out infinite alternate}
+@keyframes kotelFade{0%{opacity:0}10%{opacity:1}80%{opacity:1}100%{opacity:0}}
+@keyframes kotelPulse{from{transform:scale(1)}to{transform:scale(1.06)}}
+.modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;
+background:rgba(0,0,0,.72);backdrop-filter:blur(2px);z-index:500;padding:20px}
+.modal.open{display:flex}
+.modal-card{width:100%;max-width:430px;padding:30px 32px 26px;
+background:linear-gradient(180deg,#3a3a3a,#262626);border:2px solid var(--red);border-radius:10px;
+box-shadow:0 24px 60px rgba(0,0,0,.8),inset 0 1px 0 rgba(255,255,255,.08);animation:pop .18s}
+.modal-card h2{margin:0 0 22px;font-family:'Cinzel Decorative',Georgia,serif;font-size:24px;
+font-weight:700;letter-spacing:1.5px;color:#d8cfc0;text-shadow:0 2px 0 #000}
+.modal-card .row{display:flex;align-items:center;justify-content:space-between;gap:16px;
+margin-bottom:14px;font-size:17px}
+.modal-card .row .val{color:var(--gold);min-width:56px;text-align:right}
+.modal-card .actions{margin-top:24px;display:flex;justify-content:center}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:8px;border-radius:4px;
+background:linear-gradient(90deg,var(--red) 0%,#555 0%);outline:none;cursor:pointer;
+border:1px solid #1a1a1a;margin:8px 0 4px}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:22px;height:22px;
+border-radius:50%;background:radial-gradient(circle at 35% 30%,#e0d8c8,#8b8272 70%,#4a443a);
+border:2px solid var(--red);box-shadow:0 2px 6px rgba(0,0,0,.7);cursor:pointer}
+input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;
+background:radial-gradient(circle at 35% 30%,#e0d8c8,#8b8272 70%,#4a443a);border:2px solid var(--red);
+box-shadow:0 2px 6px rgba(0,0,0,.7);cursor:pointer}
+select{font-family:inherit;font-size:17px;color:var(--text);background:#232323;
+border:2px solid var(--red);border-radius:6px;padding:8px 14px;cursor:pointer;outline:none}
+select:hover{border-color:var(--redb)}
+.toast{position:fixed;top:46px;left:50%;transform:translate(-50%,-22px);padding:14px 30px;font-size:18px;
+letter-spacing:.6px;color:var(--text);background:rgba(20,20,20,.96);border:2px solid var(--red);
+border-radius:8px;box-shadow:0 12px 34px rgba(0,0,0,.8);opacity:0;pointer-events:none;
+transition:opacity .35s,transform .35s;z-index:1000;white-space:nowrap;max-width:92vw;overflow:hidden;text-overflow:ellipsis}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+@media(max-width:900px){.topbar{gap:8px 14px;padding:10px 14px}.topbar .item{font-size:14px}
+.ready-btn{font-size:15px;padding:9px 18px}.prep-hint{display:none}}
+@media(max-width:700px){#mainMenu .title{top:20px;left:20px;max-width:88%}
+.bottom-left{left:20px;bottom:24px;gap:14px}.corner-br{right:20px;bottom:22px}
+.btn.big{font-size:21px;padding:15px 34px}.center{gap:20px}.toast{font-size:15px;padding:12px 20px}
+.prep-panel{gap:8px;padding:8px 12px}.prep-label{display:none}}
+</style>
+</head>
+<body>
+
+<div id="mainMenu" class="screen active">
+  <h1 class="title">The Era<br>of Medieval Wars</h1>
+  <div class="bottom-left">
+    <button class="btn big" id="btnPlay">Игра</button>
+    <button class="btn" id="btnExit">Выход</button>
+  </div>
+  <button class="btn corner-br" id="btnSettingsMain">Настройки</button>
+</div>
+
+<div id="modeMenu" class="screen">
+  <button class="btn small corner-tl" id="btnBackFromMode">Назад</button>
+  <div class="center"><button class="btn big" id="btnSingle">Одиночная игра</button></div>
+</div>
+
+<div id="sideMenu" class="screen">
+  <button class="btn small corner-tl" id="btnBackFromSide">Назад</button>
+  <div class="center">
+    <button class="btn big" data-side="attack">Атакующие</button>
+    <button class="btn big" data-side="defend">Обороняющие</button>
+  </div>
+  <button class="btn bottom-center" id="btnMatchSettings">Настройки</button>
+</div>
+
+<div id="gameScreen" class="screen">
+  <div class="topbar">
+    <span class="item">Вы играете за: <b id="sideLabel">—</b></span>
+    <span class="sep"></span>
+    <span class="item" id="roundLabel">Раунд 1 / 5</span>
+    <span class="sep"></span>
+    <span class="item">Ресурсы: <b id="resLabel">120</b> юнитов, <b id="resHorses">40</b> коней</span>
+    <span class="spacer"></span>
+    <span class="phase" id="phaseLabel">Фаза подготовки</span>
+    <button class="btn ready-btn" id="btnReady">Готов</button>
+    <button class="btn small" id="btnToMain">В главное меню</button>
+  </div>
+  <div class="prep-panel" id="prepPanel">
+    <span class="prep-label">Тип:</span>
+    <div class="prep-group">
+      <button class="prep-btn" data-type="inf">Пехота</button>
+      <button class="prep-btn" data-type="cav">Кавалерия</button>
+    </div>
+    <div class="prep-sep"></div>
+    <span class="prep-label">Отряд:</span>
+    <div class="prep-group">
+      <button class="prep-btn" data-size="5">5</button>
+      <button class="prep-btn" data-size="10">10</button>
+      <button class="prep-btn" data-size="20">20</button>
+      <button class="prep-btn" data-size="40">40</button>
+    </div>
+    <div class="prep-sep"></div>
+    <button class="prep-btn clear-btn" id="btnClear">Очистить поле</button>
+    <button class="prep-btn cossack-btn" id="btnCossacks" style="display:none">Отправить казаков (15)</button>
+    <button class="prep-btn kotel-btn" id="btnKotel" style="display:none">Цель: Окружение (Котел)</button>
+    <span class="prep-hint">ЛКМ — поставить · ПКМ — убрать</span>
+  </div>
+  <div class="board-wrap" id="boardWrap">
+    <canvas id="board"></canvas>
+    <div class="round-overlay" id="roundOverlay">
+      <div class="round-result-card">
+        <h2 id="roundResultTitle">Результат раунда</h2>
+        <p id="roundResultText"></p>
+        <button class="btn" id="btnNextRound">Следующий раунд</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="kotel-flash" id="kotelFlash">
+  <div class="kotel-text">ВРАГ В КОТЛЕ!</div>
+</div>
+
+<div class="modal" id="settingsModal">
+  <div class="modal-card">
+    <h2>Настройки</h2>
+    <div class="row"><span>Громкость звука</span><span class="val" id="volumeValue">50%</span></div>
+    <input type="range" id="volumeSlider" min="0" max="100" step="1" value="50">
+    <div class="actions"><button class="btn" id="btnCloseSettings">Выйти из настроек</button></div>
+  </div>
+</div>
+
+<div class="modal" id="matchModal">
+  <div class="modal-card">
+    <h2>Настройки матча</h2>
+    <div class="row">
+      <span>Количество раундов</span>
+      <select id="roundsSelect">
+        <option value="3">3</option>
+        <option value="5" selected>5</option>
+        <option value="7">7</option>
+        <option value="9">9</option>
+      </select>
+    </div>
+    <div class="actions"><button class="btn" id="btnCloseMatch">Выйти</button></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+"use strict";
+/* ============ STATE ============ */
+const state = {
+  volume: 50, rounds: 5, side: null, round: 1, phase: "prepare",
+  units: 120, horses: 40, enemyUnits: 120, enemyHorses: 40,
+  troops: [], selectedType: "inf", selectedSize: 5,
+  breakthrough: false,
+  // Cossack mechanics
+  cossackSent: false,
+  raidBonusDefender: 0,      // +damage to raids on defender
+  raidReductionAttacker: 0,  // -damage to raids on attacker
+  raidLog: [],
+  // Ambush
+  ambushTroopId: null,
+  ambushReleased: false,
+  ambushBuffUntil: 0,
+  // Kotel
+  kotelMode: false,
+  kotelTriggered: false,
+  // Battle time
+  battleTime: 0
+};
+const SIDE_NAMES = {attack: "Атакующих", defend: "Обороняющих"};
+const ROUNDS_OK = [3,5,7,9];
+
+/* ============ MAP ============ */
+const COLS = 26, ROWS = 10, CELL = 36;
+const LW = COLS*CELL, LH = ROWS*CELL;
+const NEUTRAL = 10, DEF_START = 16;
+const RANGE = 1.4;
+const MIN_ATTACKER_RESERVE = 15;
+let nextId = 1;
+
+function zoneBounds(side){
+  return side === "attack" ? [0, NEUTRAL] : [DEF_START, COLS];
+}
+
+/* ============ UTILS ============ */
+function $(id){ return document.getElementById(id); }
+
+function showScreen(id){
+  document.querySelectorAll(".screen").forEach(s => s.classList.toggle("active", s.id === id));
+  if (id === "gameScreen"){
+    requestAnimationFrame(() => { resizeCanvas(); drawBoard(); });
+  }
+}
+
+function openModal(id){ $(id).classList.add("open"); }
+function closeModal(id){ $(id).classList.remove("open"); }
+
+let toastTimer = null;
+function showToast(msg, dur){
+  const t = $("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove("show"), dur || 2000);
+}
+
+/* ============ MAIN MENU ============ */
+$("btnPlay").onclick = () => showScreen("modeMenu");
+$("btnExit").onclick = () => { showToast("Спасибо за игру"); setTimeout(() => window.close(), 900); };
+$("btnSettingsMain").onclick = () => openModal("settingsModal");
+
+/* ============ MODE MENU ============ */
+$("btnSingle").onclick = () => showScreen("sideMenu");
+$("btnBackFromMode").onclick = () => showScreen("mainMenu");
+
+/* ============ SIDE MENU ============ */
+document.querySelectorAll("#sideMenu [data-side]").forEach(btn => {
+  btn.onclick = () => startGame(btn.dataset.side);
+});
+$("btnBackFromSide").onclick = () => showScreen("modeMenu");
+$("btnMatchSettings").onclick = () => {
+  $("roundsSelect").value = String(state.rounds);
+  openModal("matchModal");
+};
+$("btnCloseMatch").onclick = () => closeModal("matchModal");
+$("roundsSelect").onchange = e => {
+  const v = parseInt(e.target.value, 10);
+  if (ROUNDS_OK.indexOf(v) !== -1) state.rounds = v;
+};
+
+/* ============ VOLUME ============ */
+const volumeSlider = $("volumeSlider");
+const volumeValue = $("volumeValue");
+
+function updateVolumeFill(){
+  const p = state.volume;
+  volumeSlider.style.background = `linear-gradient(90deg,var(--red) 0%,var(--red) ${p}%,#555 ${p}%,#555 100%)`;
+}
+function applyVolume(v){
+  state.volume = Math.max(0, Math.min(100, v));
+  volumeValue.textContent = state.volume + "%";
+  volumeSlider.value = String(state.volume);
+  updateVolumeFill();
+}
+volumeSlider.oninput = e => applyVolume(parseInt(e.target.value, 10));
+$("btnCloseSettings").onclick = () => closeModal("settingsModal");
+
+document.querySelectorAll(".modal").forEach(m => {
+  m.onclick = e => { if (e.target === m) m.classList.remove("open"); };
+});
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape") document.querySelectorAll(".modal.open").forEach(m => m.classList.remove("open"));
+});
+
+/* ============ START GAME ============ */
+function startGame(side){
+  state.side = side;
+  state.round = 1;
+  state.units = 120;
+  state.horses = 40;
+  state.enemyUnits = 120;
+  state.enemyHorses = 40;
+  state.selectedType = "inf";
+  state.selectedSize = 5;
+  state.troops = [];
+  state.breakthrough = false;
+  state.cossackSent = false;
+  state.raidBonusDefender = 0;
+  state.raidReductionAttacker = 0;
+  state.raidLog = [];
+  state.ambushTroopId = null;
+  state.ambushReleased = false;
+  state.ambushBuffUntil = 0;
+  state.kotelMode = false;
+  state.kotelTriggered = false;
+  state.battleTime = 0;
+  showScreen("gameScreen");
+  beginRound();
+}
+
+/* ============ ROUND ============ */
+function beginRound(){
+  if (battleAnim){ cancelAnimationFrame(battleAnim); battleAnim = null; }
+
+  state.phase = "prepare";
+  state.troops = [];
+  state.breakthrough = false;
+  state.cossackSent = false;
+  state.kotelTriggered = false;
+  state.ambushTroopId = null;
+  state.ambushReleased = false;
+  state.ambushBuffUntil = 0;
+  state.battleTime = 0;
+  state.raidLog = [];
+  nextId = 1;
+
+  generateEnemyArmy();
+  clampSelectedSize();
+
+  $("roundOverlay").classList.remove("show");
+  updateHUD();
+  updatePrepPanel();
+  requestAnimationFrame(() => { resizeCanvas(); drawBoard(); });
+}
+
+/* ============ ENEMY ARMY ============ */
+function generateEnemyArmy(){
+  if (!state.side) return;
+
+  const enemySide = state.side === "attack" ? "defend" : "attack";
+  const b = zoneBounds(enemySide);
+  const zStart = b[0], zEnd = b[1];
+  const used = new Set();
+
+  function pickCell(){
+    for (let i=0; i<400; i++){
+      const col = zStart + Math.floor(Math.random()*(zEnd-zStart));
+      const row = Math.floor(Math.random()*ROWS);
+      const key = col+":"+row;
+      if (!used.has(key)){ used.add(key); return {
