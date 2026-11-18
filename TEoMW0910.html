@@ -1,0 +1,1027 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>The Era of Medieval Wars</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+<style>
+:root{--red:#8f1a1a;--redb:#d32f2f;--gold:#c9a227;--text:#e6e1d8}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;height:100%;overflow:hidden}
+body{font-family:Georgia,serif;color:var(--text);background:#2b2b2b;background-image:radial-gradient(circle at 18% 8%,rgba(255,255,255,.055),transparent 45%),radial-gradient(circle at 82% 92%,rgba(0,0,0,.5),transparent 55%),repeating-linear-gradient(45deg,rgba(255,255,255,.014) 0 2px,transparent 2px 7px);user-select:none}
+input[type=number]{-moz-appearance:textfield}
+input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+.screen{position:fixed;inset:0;display:none}.screen.active{display:block}
+#gameScreen.active{display:flex;flex-direction:column}
+.btn{font-family:inherit;font-size:20px;letter-spacing:1px;text-transform:uppercase;color:var(--text);padding:13px 30px;border:2px solid var(--red);border-radius:6px;cursor:pointer;background:linear-gradient(180deg,#4b4b4b,#2c2c2c);box-shadow:inset 0 1px 0 rgba(255,255,255,.1),inset 0 -2px 6px rgba(0,0,0,.45),0 5px 12px rgba(0,0,0,.55);transition:transform .12s,background .18s,border-color .18s}
+.btn:hover{background:linear-gradient(180deg,#5e5e5e,#383838);border-color:var(--redb);transform:translateY(-2px);box-shadow:0 8px 18px rgba(0,0,0,.6),0 0 16px rgba(211,47,47,.35)}
+.btn:active{transform:translateY(1px)}.btn:disabled{opacity:.5;cursor:default;transform:none!important}
+.btn.big{font-size:27px;padding:20px 58px}.btn.small{font-size:15px;padding:9px 18px}
+.gold-btn{border-color:var(--gold);color:#e6d9a0}
+.gold-btn:hover{border-color:#f0d06a;box-shadow:0 8px 18px rgba(0,0,0,.6),0 0 16px rgba(201,162,39,.5)}
+#mainMenu .title{position:absolute;top:34px;left:48px;margin:0;max-width:62%;font-family:'Cinzel Decorative',Georgia,serif;font-weight:900;font-size:clamp(26px,4.6vw,62px);line-height:1.08;letter-spacing:3px;color:#b3151a;text-shadow:0 0 22px rgba(190,25,25,.55),3px 3px 0 #140505}
+.bottom-left{position:absolute;left:48px;bottom:40px;display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+.corner-br{position:absolute;right:40px;bottom:32px}.corner-tl{position:absolute;left:32px;top:28px;z-index:5}
+.center{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);display:flex;align-items:center;justify-content:center;gap:40px;flex-wrap:wrap;width:100%;padding:0 20px}
+.bottom-center{position:absolute;left:50%;bottom:34px;transform:translateX(-50%)}
+.topbar{display:flex;flex-wrap:wrap;align-items:center;gap:10px 22px;padding:12px 22px;background:linear-gradient(180deg,#3b3b3b,#232323);border-bottom:3px solid var(--red);flex-shrink:0}
+.topbar .item{font-size:16px;white-space:nowrap}.topbar .item b{color:var(--gold);font-weight:normal}
+.topbar .vs{color:#b0b0b0;font-size:14px;letter-spacing:2px}
+.topbar .sep{width:2px;height:22px;background:rgba(255,255,255,.12)}.topbar .spacer{flex:1 1 16px}
+.phase{color:var(--gold);text-transform:uppercase;font-size:13px!important;letter-spacing:1.4px!important;padding:4px 12px;border:1px solid rgba(201,162,39,.45);border-radius:4px;background:rgba(201,162,39,.07);white-space:nowrap}
+.phase.battle{color:#ffb4a2;border-color:rgba(211,47,47,.6);background:rgba(211,47,47,.12)}
+.net-status{font-size:12px;padding:4px 10px;border-radius:4px;display:none;white-space:nowrap}
+.net-status.show{display:inline-block}
+.net-status.waiting{color:#ffd070;background:rgba(150,120,30,.2);border:1px solid rgba(200,160,50,.5)}
+.net-status.connected{color:#7fff7f;background:rgba(50,150,50,.2);border:1px solid rgba(50,200,50,.5)}
+.net-status.disconnected{color:#ff7070;background:rgba(150,50,50,.2);border:1px solid rgba(200,50,50,.5)}
+.ready-btn{font-size:18px;padding:11px 30px;border-color:var(--gold);background:linear-gradient(180deg,#7d2323,#4a1212);color:#ffe9c9;animation:pulse 2s ease-in-out infinite}
+.ready-btn:disabled{animation:none;opacity:.75}
+.ready-btn.waiting-ready{background:linear-gradient(180deg,#a06a1a,#6b3f08);border-color:#d09020;color:#ffe8a0;animation:none;box-shadow:0 6px 16px rgba(0,0,0,.55),0 0 16px rgba(210,144,32,.4);font-size:15px}
+.ready-btn.waiting-ready:hover{background:linear-gradient(180deg,#c08020,#804810);border-color:#f0b840}
+@keyframes pulse{0%,100%{box-shadow:inset 0 1px 0 rgba(255,255,255,.12),0 6px 16px rgba(0,0,0,.55),0 0 8px rgba(201,162,39,.25)}50%{box-shadow:inset 0 1px 0 rgba(255,255,255,.12),0 6px 16px rgba(0,0,0,.55),0 0 24px rgba(201,162,39,.7)}}
+.prep-panel{display:flex;align-items:center;gap:10px;padding:9px 22px;background:linear-gradient(180deg,#2e2e2e,#1e1e1e);border-bottom:2px solid #444;flex-shrink:0;flex-wrap:wrap;min-height:48px}
+.prep-group{display:flex;gap:6px;align-items:center}
+.prep-label{color:#999;font-size:13px;white-space:nowrap}
+.prep-sep{width:1px;height:24px;background:#444}
+.prep-btn{font-family:inherit;font-size:14px;padding:6px 14px;color:var(--text);background:linear-gradient(180deg,#3a3a3a,#252525);border:1px solid #555;border-radius:4px;cursor:pointer;min-width:36px}
+.prep-btn:hover:not(:disabled){border-color:var(--redb);background:linear-gradient(180deg,#4a4a4a,#333)}
+.prep-btn.active{border-color:var(--gold);background:linear-gradient(180deg,#7d2323,#4a1212);color:#ffe9c9;box-shadow:0 0 10px rgba(201,162,39,.4)}
+.clear-btn{border-color:#666}.cossack-btn{border-color:#8a6d2a;color:#f0d590}
+.kotel-btn{border-color:#8a4a4a;color:#e0b0b0}
+.kotel-btn.active{border-color:var(--redb)!important;background:linear-gradient(180deg,#7d2323,#4a1212)!important;color:#ffe9c9!important}
+.prep-hint{color:#666;font-size:12px;font-style:italic;margin-left:auto;white-space:nowrap}
+.prep-input{width:72px;font-family:inherit;font-size:14px;padding:6px 8px;color:var(--text);background:linear-gradient(180deg,#3a3a3a,#252525);border:1px solid #555;border-radius:4px;outline:none;text-align:center}
+.prep-input:focus{border-color:var(--gold)}
+.board-wrap{flex:1;position:relative;display:flex;align-items:center;justify-content:center;padding:16px;min-height:0;overflow:hidden}
+#board{display:block;border-radius:5px;box-shadow:0 14px 40px rgba(0,0,0,.7);cursor:pointer}
+.round-overlay{position:absolute;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.72);z-index:300;padding:20px}
+.round-overlay.show{display:flex}
+.round-result-card{background:linear-gradient(180deg,#3a3a3a,#262626);border:2px solid var(--gold);border-radius:12px;padding:30px 40px;text-align:center;max-width:540px;max-height:85vh;overflow-y:auto}
+.round-result-card h2{margin:0 0 14px;font-family:'Cinzel Decorative',Georgia,serif;font-size:24px;color:var(--gold)}
+.round-result-card p{margin:0 0 22px;font-size:15px;color:#ccc;line-height:1.6;white-space:pre-line;text-align:left}
+.kotel-flash{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.85);z-index:900;pointer-events:none}
+.kotel-flash.show{display:flex}
+.kotel-text{font-family:'Cinzel Decorative',Georgia,serif;font-size:clamp(36px,9vw,110px);font-weight:900;color:#ff2020;text-align:center;text-shadow:0 0 30px rgba(255,50,50,.9)}
+.modal{position:fixed;inset:0;display:none;background:rgba(0,0,0,.72);z-index:500;padding:20px;overflow-y:auto}
+.modal.open{display:flex}
+.modal-card{margin:auto;width:100%;max-width:430px;padding:28px 30px 24px;background:linear-gradient(180deg,#3a3a3a,#262626);border:2px solid var(--red);border-radius:10px}
+.modal-card h2{margin:0 0 18px;font-family:'Cinzel Decorative',Georgia,serif;font-size:23px;color:#d8cfc0}
+.modal-card .row{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:6px;font-size:16px}
+.modal-card .row .val{color:var(--gold);min-width:56px;text-align:right;font-size:15px}
+.modal-card .actions{margin-top:22px;display:flex;justify-content:center}
+.settings-input{width:100%;font-family:inherit;font-size:16px;padding:8px 12px;color:var(--text);background:#232323;border:2px solid var(--red);border-radius:6px;outline:none;margin:4px 0 14px;text-align:center}
+input[type=range]{-webkit-appearance:none;width:100%;height:8px;border-radius:4px;background:linear-gradient(90deg,var(--red) 0%,#555 0%);outline:none;cursor:pointer;border:1px solid #1a1a1a;margin:6px 0 12px}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#e0d8c8,#8b8272 70%,#4a443a);border:2px solid var(--red);cursor:pointer}
+select{font-family:inherit;font-size:16px;color:var(--text);background:#232323;border:2px solid var(--red);border-radius:6px;padding:7px 12px;cursor:pointer;outline:none}
+.toast{position:fixed;top:46px;left:50%;transform:translate(-50%,-22px);padding:14px 30px;font-size:16px;color:var(--text);background:rgba(20,20,20,.96);border:2px solid var(--red);border-radius:8px;opacity:0;pointer-events:none;transition:opacity .35s,transform .35s;z-index:1000;white-space:nowrap;max-width:92vw;overflow:hidden;text-overflow:ellipsis}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+.rules-card{max-width:640px}
+.rules-scroll{max-height:58vh;overflow-y:auto;padding-right:12px;margin-bottom:8px;font-size:14px;line-height:1.65;color:#d4cec2;text-align:left}
+.rules-scroll h3{margin:14px 0 6px;color:var(--gold);font-size:15px;text-transform:uppercase}
+.rules-scroll ul{margin:4px 0 8px;padding-left:22px}
+#lobbyScreen.active,#hostSetupScreen.active,#waitingRoomScreen.active{display:flex;align-items:center;justify-content:center;padding:70px 20px 30px;overflow-y:auto}
+.lobby-content{display:flex;flex-direction:column;gap:24px;align-items:center;width:100%;max-width:1000px;margin:auto}
+.name-field{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;width:100%;max-width:340px}
+.name-field label{color:var(--gold);font-size:13px;letter-spacing:1.2px;text-transform:uppercase}
+.name-field input{width:100%;font-family:inherit;font-size:17px;text-align:center;padding:9px 14px;background:#1c1c1c;color:var(--text);border:2px solid var(--gold);border-radius:6px;outline:none;letter-spacing:1px}
+.lobby-container{display:flex;gap:30px;flex-wrap:wrap;justify-content:center;align-items:flex-start;width:100%;max-width:1000px}
+.lobby-panel{background:linear-gradient(180deg,#3a3a3a,#262626);border:2px solid var(--red);border-radius:12px;padding:24px 26px;min-width:320px;flex:1 1 380px;max-width:440px;text-align:center}
+.lobby-panel h2{margin:0 0 18px;font-family:'Cinzel Decorative',Georgia,serif;font-size:20px;color:var(--gold)}
+.lobby-code-display{margin:16px 0 10px;padding:12px;background:#1c1c1c;border:2px solid var(--gold);border-radius:6px;font-family:'Courier New',monospace;font-size:22px;letter-spacing:4px;color:#ffe9c9}
+.lobby-input{width:100%;font-family:'Courier New',monospace;font-size:20px;text-align:center;letter-spacing:3px;padding:10px;background:#1c1c1c;color:var(--text);border:2px solid var(--red);border-radius:6px;outline:none;margin:10px 0 14px;text-transform:uppercase}
+.lobby-settings{margin-top:18px;text-align:left}
+.lobby-setting-row{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:10px;font-size:14px;color:#ccc}
+.lobby-setting-row span{flex:1;text-align:left}
+.lobby-setting-row select{font-size:14px;padding:6px 10px;min-width:100px}
+.lobby-input-num{width:100px;font-family:inherit;font-size:15px;padding:6px 10px;color:var(--text);background:#232323;border:2px solid var(--red);border-radius:6px;outline:none;text-align:center}
+.lobby-status{margin-top:16px;padding:10px;border-radius:6px;font-size:14px;background:rgba(0,0,0,.35);border:1px solid #444;color:#aaa;min-height:20px}
+.lobby-status.ok{color:#7fff7f;border-color:rgba(50,200,50,.5);background:rgba(50,150,50,.15)}
+.lobby-status.err{color:#ff7070;border-color:rgba(200,50,50,.5);background:rgba(150,50,50,.15)}
+.players-list{margin:16px 0;padding:12px;background:rgba(0,0,0,.35);border:1px solid #444;border-radius:8px;min-height:70px;display:flex;flex-direction:column;gap:8px}
+.player-row{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:rgba(255,255,255,.03);border-radius:6px;font-size:15px;gap:10px}
+.player-row.host{border-left:3px solid #d09020}
+.player-row.guest{border-left:3px solid #6f9fd8}
+.player-row .name{color:#fff;font-weight:bold;flex:1;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.player-row .side{color:#bbb;font-size:13px;white-space:nowrap}
+.player-row .role{color:#666;font-size:11px;text-transform:uppercase;letter-spacing:1px;white-space:nowrap}
+@media(max-width:700px){#mainMenu .title{top:20px;left:20px;max-width:88%}.bottom-left{left:20px;bottom:24px;gap:10px}.btn.big{font-size:21px;padding:15px 34px}.center{gap:20px;flex-direction:column}.prep-hint{display:none}.lobby-container{gap:18px}.lobby-panel{min-width:0;padding:18px 16px}}
+</style>
+</head>
+<body>
+
+<div id="mainMenu" class="screen active">
+  <h1 class="title">The Era<br>of Medieval Wars</h1>
+  <div class="bottom-left">
+    <button class="btn big" id="btnPlay">Игра</button>
+    <button class="btn gold-btn" id="btnRules">Правила</button>
+    <button class="btn" id="btnExit">Выход</button>
+  </div>
+  <button class="btn corner-br" id="btnSettingsMain">Настройки</button>
+</div>
+
+<div id="modeMenu" class="screen">
+  <button class="btn small corner-tl" id="btnBackFromMode">Назад</button>
+  <div class="center">
+    <button class="btn big" id="btnSingle">Одиночная игра</button>
+    <button class="btn big gold-btn" id="btnOnline">Игра с другом (Онлайн)</button>
+  </div>
+</div>
+
+<div id="sideMenu" class="screen">
+  <button class="btn small corner-tl" id="btnBackFromSide">Назад</button>
+  <div class="center">
+    <button class="btn big" data-side="attack">Атакующие</button>
+    <button class="btn big" data-side="defend">Обороняющие</button>
+  </div>
+  <button class="btn bottom-center" id="btnMatchSettings">Настройки</button>
+</div>
+
+<div id="lobbyScreen" class="screen">
+  <button class="btn small corner-tl" id="btnBackFromLobby">Назад</button>
+  <div class="lobby-content">
+    <div class="name-field">
+      <label>Ваше имя командира</label>
+      <input type="text" id="playerNameInput" maxlength="16" placeholder="Полководец" autocomplete="off">
+    </div>
+    <div class="lobby-container">
+      <div class="lobby-panel">
+        <h2>Создать игру (Хост)</h2>
+        <button class="btn" id="btnCreateRoom">Создать комнату</button>
+      </div>
+      <div class="lobby-panel">
+        <h2>Присоединиться (Гость)</h2>
+        <input type="text" id="joinCodeInput" class="lobby-input" placeholder="КОД" maxlength="8">
+        <button class="btn" id="btnJoinRoom">Подключиться</button>
+        <div class="lobby-status" id="guestStatus">Введите код комнаты</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="hostSetupScreen" class="screen">
+  <button class="btn small corner-tl" id="btnBackFromHostSetup">Назад</button>
+  <div class="lobby-content">
+    <div class="lobby-panel">
+      <h2>Настройки матча</h2>
+      <div class="lobby-settings">
+        <div class="lobby-setting-row"><span>Ваша сторона:</span>
+          <select id="hostSide"><option value="attack">Атакующие</option><option value="defend">Обороняющие</option></select></div>
+        <div class="lobby-setting-row"><span>Раунды:</span>
+          <select id="hostRounds"><option value="3">3</option><option value="5" selected>5</option><option value="7">7</option><option value="9">9</option></select></div>
+        <div class="lobby-setting-row"><span>Старт. юниты (Атака):</span>
+          <input type="number" id="hostUnits" class="lobby-input-num" min="10" value="120"></div>
+        <div class="lobby-setting-row"><span>Старт. кони:</span>
+          <input type="number" id="hostHorses" class="lobby-input-num" min="0" value="40"></div>
+        <div class="lobby-setting-row"><span>Сила набегов:</span>
+          <input type="number" id="hostRaid" class="lobby-input-num" min="0" value="15"></div>
+      </div>
+      <div class="lobby-status" id="hostSetupStatus"></div>
+      <button class="btn" id="btnHostNext" style="margin-top:16px">Дальше</button>
+    </div>
+  </div>
+</div>
+
+<div id="waitingRoomScreen" class="screen">
+  <button class="btn small corner-tl" id="btnBackFromWaitingRoom">Назад</button>
+  <div class="lobby-content">
+    <div class="lobby-panel">
+      <h2>Зал ожидания</h2>
+      <div class="lobby-code-display">Код: <span id="waitingRoomCode">—</span></div>
+      <button class="btn small" id="btnCopyWaitingCode">Скопировать код</button>
+      <div id="playersList" class="players-list"></div>
+      <div class="lobby-status" id="waitingStatus">Ожидание игроков...</div>
+      <button class="btn big" id="btnPlayNow" style="margin-top:16px">Играть</button>
+    </div>
+  </div>
+</div>
+
+<div id="gameScreen" class="screen">
+  <div class="topbar">
+    <span class="item">Атакующие: <b id="atkNameLabel">—</b></span>
+    <span class="vs">VS</span>
+    <span class="item">Обороняющие: <b id="defNameLabel">—</b></span>
+    <span class="sep"></span>
+    <span class="item" id="roundLabel">Раунд 1 / 5</span>
+    <span class="sep"></span>
+    <span class="item">Ресурсы: <b id="resLabel">120</b> юнитов, <b id="resHorses">40</b> коней</span>
+    <span class="spacer"></span>
+    <span class="net-status" id="netStatus"></span>
+    <span class="phase" id="phaseLabel">Фаза подготовки</span>
+    <button class="btn ready-btn" id="btnReady">Готов</button>
+    <button class="btn small" id="btnToMain">В главное меню</button>
+  </div>
+  <div class="prep-panel" id="prepPanel">
+    <span class="prep-label">Тип:</span>
+    <div class="prep-group">
+      <button class="prep-btn active" data-type="inf">Пехота</button>
+      <button class="prep-btn" data-type="cav">Кавалерия</button>
+    </div>
+    <div class="prep-sep"></div>
+    <span class="prep-label">Отряд:</span>
+    <div class="prep-group">
+      <button class="prep-btn active" data-size="5">5</button>
+      <button class="prep-btn" data-size="10">10</button>
+      <button class="prep-btn" data-size="20">20</button>
+      <button class="prep-btn" data-size="40">40</button>
+    </div>
+    <span class="prep-label">Свое:</span>
+    <input type="number" id="customSizeInput" class="prep-input" min="1" value="5">
+    <div class="prep-sep"></div>
+    <button class="prep-btn clear-btn" id="btnClear">Очистить</button>
+    <button class="prep-btn cossack-btn" id="btnCossacks" style="display:none">Казаки (15)</button>
+    <button class="prep-btn kotel-btn" id="btnKotel" style="display:none">Котел</button>
+    <span class="prep-hint">ЛКМ — поставить · ПКМ — убрать</span>
+  </div>
+  <div class="board-wrap" id="boardWrap">
+    <canvas id="board"></canvas>
+    <div class="round-overlay" id="roundOverlay">
+      <div class="round-result-card">
+        <h2 id="roundResultTitle">Результат раунда</h2>
+        <p id="roundResultText"></p>
+        <button class="btn" id="btnNextRound">Следующий раунд</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="kotel-flash" id="kotelFlash"><div class="kotel-text">ВРАГ В КОТЛЕ!</div></div>
+
+<div class="modal" id="settingsModal">
+  <div class="modal-card">
+    <h2>Настройки</h2>
+    <div class="row"><span>Громкость звука</span><span class="val" id="volumeValue">50%</span></div>
+    <input type="range" id="volumeSlider" min="0" max="100" step="1" value="50">
+    <div class="actions"><button class="btn" id="btnCloseSettings">Выйти</button></div>
+  </div>
+</div>
+
+<div class="modal" id="matchModal">
+  <div class="modal-card">
+    <h2>Настройки матча</h2>
+    <div class="row"><span>Раундов</span>
+      <select id="roundsSelect"><option value="3">3</option><option value="5" selected>5</option><option value="7">7</option><option value="9">9</option></select></div>
+    <div class="row" style="margin-top:10px"><span>Стартовые юниты (Атака)</span></div>
+    <input type="number" id="unitsInput" class="settings-input" min="10" value="120">
+    <div class="row"><span>Стартовые кони</span></div>
+    <input type="number" id="horsesInput" class="settings-input" min="0" value="40">
+    <div class="row"><span>Сила набегов (макс.)</span></div>
+    <input type="number" id="raidInput" class="settings-input" min="0" value="15">
+    <div class="actions"><button class="btn" id="btnCloseMatch">Выйти</button></div>
+  </div>
+</div>
+
+<div class="modal" id="rulesModal">
+  <div class="modal-card rules-card">
+    <h2>Правила игры</h2>
+    <div class="rules-scroll">
+      <p><strong>Цель:</strong> Победить армию противника по итогам серии раундов.</p>
+      <h3>Войска</h3>
+      <ul><li><strong>Пехота:</strong> тратит 1 юнита.</li><li><strong>Кавалерия:</strong> тратит 1 юнита + 1 коня.</li></ul>
+      <h3>Баланс</h3>
+      <ul><li>Обороняющие: <strong>+40 юнитов</strong>.</li><li>Со 2-го раунда: <strong>+20 юнитов и +5 коней</strong>.</li></ul>
+      <h3>Онлайн</h3>
+      <ul><li>Хост создаёт комнату, гость вводит код.</li><li>Оба жмут «Играть» — бой стартует одновременно.</li></ul>
+    </div>
+    <div class="actions"><button class="btn" id="btnCloseRules">Закрыть</button></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+"use strict";
+
+/* ============ MQTT CONFIG ============ */
+const MQTT_BROKER = "wss://broker.emqx.io:8084/mqtt";
+const MQTT_TOPIC_PREFIX = "medieval-wars-game/room-";
+
+/* ============ STATE ============ */
+const state={mode:"single",volume:50,rounds:5,side:null,opponentSide:null,round:1,phase:"prepare",
+units:120,horses:40,enemyUnits:120,enemyHorses:40,startingUnits:120,startingHorses:40,raidStrength:15,
+troops:[],selectedType:"inf",selectedSize:5,cossackSent:false,
+kotelMode:false,kotelTriggered:false,myName:"Полководец",oppName:""};
+
+const net={client:null,connected:false,isHost:false,roomId:null,topic:null,
+myReady:false,oppReady:false,oppPlacement:null,
+clientId:null,lobbyReady:false,oppLobbyReady:false,hostSide:null,hostSettings:null,gameStarted:false};
+
+const SIDE_NAMES={attack:"Атакующих",defend:"Обороняющих"};
+const ROUNDS_OK=[3,5,7,9];
+const DEF_BONUS=40,REINF_U=20,REINF_H=5;
+const COLS=26,ROWS=10,CELL=36,LW=COLS*CELL,LH=ROWS*CELL,NEUTRAL=10,DEF_START=16,MIN_ATK_RES=15;
+let nextId=1;
+
+function zoneBounds(s){return s==="attack"?[0,NEUTRAL]:[DEF_START,COLS];}
+function isNetwork(){return state.mode==="network";}
+function $(id){return document.getElementById(id);}
+function oppositeSide(s){return s==="attack"?"defend":"attack";}
+function hasOpponent(){return state.oppName&&state.oppName.length>0;}
+function escapeHtml(s){if(s==null)return "";return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+
+function showScreen(id){
+  document.querySelectorAll(".screen").forEach(s=>s.classList.toggle("active",s.id===id));
+  if(id==="gameScreen")requestAnimationFrame(()=>{resizeCanvas();drawBoard();});
+}
+function openModal(id){$(id).classList.add("open");}
+function closeModal(id){$(id).classList.remove("open");}
+let toastTimer=null;
+function showToast(m,d){const t=$("toast");t.textContent=m;t.classList.add("show");clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove("show"),d||2000);}
+function fillRange(s){const mn=parseFloat(s.min)||0,mx=parseFloat(s.max)||100,v=parseFloat(s.value)||0;const p=mx>mn?((v-mn)/(mx-mn))*100:0;s.style.background=`linear-gradient(90deg,var(--red) 0%,var(--red) ${p}%,#555 ${p}%,#555 100%)`;}
+function updateNetStatus(st){const el=$("netStatus");if(!el)return;if(!st){el.classList.remove("show");return;}el.classList.add("show");el.classList.remove("waiting","connected","disconnected");el.classList.add(st);el.textContent=st==="connected"?"Онлайн: подключено":st==="waiting"?"Онлайн: ожидание...":"Соперник отключился";}
+function clampNum(el,mn,fb){let v=parseInt(el.value,10);if(isNaN(v)||v<mn)v=fb;if(v<mn)v=mn;el.value=String(v);return v;}
+
+/* ============ NAMES ============ */
+const DEFAULT_NAME="Полководец";
+function loadSavedName(){try{const s=sessionStorage.getItem("temw_name");if(s&&s.trim())return s.trim().slice(0,16);}catch(e){}return "";}
+function saveName(n){try{sessionStorage.setItem("temw_name",n);}catch(e){}}
+function resolveName(raw){const t=(raw||"").trim().slice(0,16);return t.length>0?t:DEFAULT_NAME;}
+$("playerNameInput").addEventListener("input",e=>{const v=e.target.value;if(v.length>16)e.target.value=v.slice(0,16);saveName(e.target.value);});
+$("playerNameInput").addEventListener("blur",e=>{e.target.value=e.target.value.trim().slice(0,16);});
+
+/* ============ MENUS ============ */
+$("btnPlay").onclick=()=>showScreen("modeMenu");
+$("btnExit").onclick=()=>{showToast("Спасибо за игру");setTimeout(()=>window.close(),900);};
+$("btnSettingsMain").onclick=()=>openModal("settingsModal");
+$("btnRules").onclick=()=>openModal("rulesModal");
+$("btnCloseRules").onclick=()=>closeModal("rulesModal");
+$("btnSingle").onclick=()=>showScreen("sideMenu");
+$("btnOnline").onclick=()=>{
+  if(typeof mqtt==="undefined"){showToast("Библиотека MQTT ещё загружается, подождите...",2800);return;}
+  cleanupNet();
+  showScreen("lobbyScreen");
+  resetLobby();
+};
+$("btnBackFromMode").onclick=()=>{cleanupNet();showScreen("mainMenu");};
+$("btnBackFromLobby").onclick=()=>{cleanupNet();showScreen("modeMenu");};
+document.querySelectorAll("#sideMenu [data-side]").forEach(b=>{b.onclick=()=>startSingle(b.dataset.side);});
+$("btnBackFromSide").onclick=()=>showScreen("modeMenu");
+
+/* ============ SETTINGS ============ */
+$("btnMatchSettings").onclick=()=>{$("roundsSelect").value=String(state.rounds);$("unitsInput").value=String(state.startingUnits);$("horsesInput").value=String(state.startingHorses);$("raidInput").value=String(state.raidStrength);openModal("matchModal");};
+$("btnCloseMatch").onclick=()=>{state.startingUnits=clampNum($("unitsInput"),10,120);state.startingHorses=clampNum($("horsesInput"),0,40);state.raidStrength=clampNum($("raidInput"),0,15);closeModal("matchModal");};
+$("roundsSelect").onchange=e=>{const v=parseInt(e.target.value,10);if(ROUNDS_OK.indexOf(v)!==-1)state.rounds=v;};
+
+/* ============ VOLUME ============ */
+const volumeSlider=$("volumeSlider"),volumeValue=$("volumeValue");
+function applyVolume(v){state.volume=Math.max(0,Math.min(100,v));volumeValue.textContent=state.volume+"%";volumeSlider.value=String(state.volume);fillRange(volumeSlider);}
+volumeSlider.oninput=e=>applyVolume(parseInt(e.target.value,10));
+$("btnCloseSettings").onclick=()=>closeModal("settingsModal");
+document.querySelectorAll(".modal").forEach(m=>{m.onclick=e=>{if(e.target===m)m.classList.remove("open");};});
+document.addEventListener("keydown",e=>{if(e.key==="Escape")document.querySelectorAll(".modal.open").forEach(m=>m.classList.remove("open"));});
+
+/* ============ MQTT CORE ============ */
+function createClientId(){return "war_"+Date.now().toString(36)+"_"+Math.random().toString(36).substr(2,6);}
+
+function hardCloseClient(){
+  const old=net.client;
+  net.client=null;
+  net.connected=false;
+  if(!old)return;
+  try{
+    old.removeAllListeners("connect");
+    old.removeAllListeners("reconnect");
+    old.removeAllListeners("error");
+    old.removeAllListeners("close");
+    old.removeAllListeners("offline");
+    old.removeAllListeners("message");
+  }catch(e){}
+  try{old.end(true);}catch(e){}
+}
+
+function mqttConnect(onSubscribed){
+  hardCloseClient();
+  net.clientId=createClientId();
+  const client=mqtt.connect(MQTT_BROKER,{
+    clientId:net.clientId,
+    clean:true,
+    keepalive:30,
+    reconnectPeriod:2000,
+    connectTimeout:8000
+  });
+  net.client=client;
+
+  client.on("connect",()=>{
+    if(net.client!==client)return;
+    net.connected=true;
+    updateNetStatus("waiting");
+    const st=$("waitingStatus");
+    if(st)st.textContent="Соединение установлено, подписка...";
+    if(!net.topic){ onSubscribed(client); return; }
+    client.subscribe(net.topic,{qos:0},(err)=>{
+      if(net.client!==client)return;
+      if(err){
+        console.warn("subscribe error:",err);
+        if(st){st.textContent="Ошибка подписки: "+err.message;st.className="lobby-status err";}
+        return;
+      }
+      onSubscribed(client);
+    });
+  });
+
+  client.on("reconnect",()=>{ if(net.client===client){net.connected=false;updateNetStatus("waiting");} });
+  client.on("error",(e)=>{ if(net.client===client)console.warn("MQTT error:",e&&e.message?e.message:e); });
+  client.on("close",()=>{ if(net.client===client){net.connected=false;} });
+  client.on("offline",()=>{ if(net.client===client){net.connected=false;updateNetStatus("waiting");} });
+  client.on("message",(topic,payload)=>{
+    if(net.client!==client)return;
+    let data;
+    try{data=JSON.parse(payload.toString());}catch(e){return;}
+    if(!data||typeof data!=="object")return;
+    if(data.senderId===net.clientId)return;
+    try{handleNetMessage(data);}catch(e){console.warn("handle error:",e);}
+  });
+}
+
+function mqttPublish(payload){
+  if(!net.client||!net.connected||!net.topic)return;
+  if(net.client.connected!==true)return;
+  payload.senderId=net.clientId;
+  try{net.client.publish(net.topic,JSON.stringify(payload),{qos:0});}catch(e){console.warn("publish error:",e);}
+}
+
+function cleanupNet(){
+  hardCloseClient();
+  net.roomId=null;net.isHost=false;net.topic=null;
+  net.myReady=false;net.oppReady=false;net.oppPlacement=null;
+  net.lobbyReady=false;net.oppLobbyReady=false;
+  net.hostSide=null;net.hostSettings=null;net.gameStarted=false;
+  state.oppName="";
+  updateNetStatus(null);
+}
+
+/* ============ LOBBY HELPERS ============ */
+function resetLobby(){
+  $("guestStatus").textContent="Введите код комнаты";$("guestStatus").className="lobby-status";
+  $("hostSetupStatus").textContent="";$("hostSetupStatus").className="lobby-status";
+  $("waitingStatus").textContent="Ожидание игроков...";$("waitingStatus").className="lobby-status";
+  $("joinCodeInput").value="";
+  $("hostUnits").value=String(state.startingUnits);
+  $("hostHorses").value=String(state.startingHorses);
+  $("hostRaid").value=String(state.raidStrength);
+  $("playerNameInput").value=loadSavedName();
+  state.oppName="";
+  net.lobbyReady=false;net.oppLobbyReady=false;net.hostSide=null;net.hostSettings=null;net.gameStarted=false;
+}
+function genRoomId(){const c="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";let id="";for(let i=0;i<6;i++)id+=c[Math.floor(Math.random()*c.length)];return id;}
+function roomTopic(code){return MQTT_TOPIC_PREFIX+code;}
+
+function updateWaitingRoomUI(){
+  const container=$("playersList");
+  if(!container)return;
+  container.innerHTML="";
+
+  let hostName,hostSide,guestName,guestSide;
+  if(net.isHost){
+    hostName=state.myName;
+    hostSide=net.hostSide||"attack";
+    guestName=state.oppName||"";
+    guestSide=hasOpponent()?oppositeSide(hostSide):null;
+  }else{
+    hostName=state.oppName||"";
+    hostSide=net.hostSide||null;
+    guestName=state.myName;
+    guestSide=hostSide?oppositeSide(hostSide):null;
+  }
+
+  const hostRow=document.createElement("div");
+  hostRow.className="player-row host";
+  hostRow.innerHTML=`<span class="name">${escapeHtml(hostName)||"—"}</span><span class="side">${hostSide?SIDE_NAMES[hostSide]:"—"}</span><span class="role">Хост</span>`;
+  container.appendChild(hostRow);
+
+  const guestRow=document.createElement("div");
+  guestRow.className="player-row guest";
+  const gN=escapeHtml(guestName)||"";
+  guestRow.innerHTML=`<span class="name">${gN||(net.isHost?"Ожидание...":"")}</span><span class="side">${guestSide?SIDE_NAMES[guestSide]:""}</span><span class="role">Гость</span>`;
+  if(!gN)guestRow.style.opacity="0.5";
+  container.appendChild(guestRow);
+
+  const btn=$("btnPlayNow");
+  btn.classList.remove("waiting-ready");
+  if(net.lobbyReady&&net.oppLobbyReady){
+    btn.textContent="Игра начинается...";
+    btn.disabled=true;
+  }else if(net.lobbyReady){
+    btn.textContent="Ожидание (нажмите для отмены)";
+    btn.disabled=false;
+    btn.classList.add("waiting-ready");
+  }else{
+    btn.textContent="Играть";
+    btn.disabled=!hasOpponent();
+  }
+}
+
+/* ============ HOST FLOW ============ */
+$("btnCreateRoom").onclick=()=>{
+  if(typeof mqtt==="undefined"){showToast("MQTT ещё загружается...",2500);return;}
+  state.myName=resolveName($("playerNameInput").value);
+  saveName($("playerNameInput").value);
+  showScreen("hostSetupScreen");
+};
+
+$("btnBackFromHostSetup").onclick=()=>{showScreen("lobbyScreen");};
+
+$("btnHostNext").onclick=()=>{
+  if(typeof mqtt==="undefined"){showToast("MQTT ещё загружается...",2500);return;}
+  cleanupNet();
+  state.myName=resolveName($("playerNameInput").value);
+  saveName($("playerNameInput").value);
+  net.hostSide=$("hostSide").value;
+  net.hostSettings={
+    rounds:parseInt($("hostRounds").value,10),
+    units:Math.max(10,parseInt($("hostUnits").value,10)||state.startingUnits),
+    horses:Math.max(0,parseInt($("hostHorses").value,10)||state.startingHorses),
+    raidStrength:Math.max(0,parseInt($("hostRaid").value,10)||state.raidStrength)
+  };
+  const code=genRoomId();
+  net.isHost=true;net.roomId=code;net.topic=roomTopic(code);
+  net.lobbyReady=false;net.oppLobbyReady=false;net.gameStarted=false;
+  $("waitingRoomCode").textContent=code;
+  updateWaitingRoomUI();
+  $("waitingStatus").textContent="Подключение к серверу...";
+  $("waitingStatus").className="lobby-status";
+  showScreen("waitingRoomScreen");
+  mqttConnect(()=>{
+    $("waitingStatus").textContent="Комната создана. Ожидание гостя...";
+    $("waitingStatus").className="lobby-status";
+    updateNetStatus("waiting");
+  });
+};
+
+$("btnCopyWaitingCode").onclick=()=>{
+  const c=$("waitingRoomCode").textContent;
+  if(navigator.clipboard)navigator.clipboard.writeText(c).then(()=>showToast("Код скопирован!"));
+  else showToast("Код: "+c,3000);
+};
+
+/* ============ GUEST FLOW ============ */
+$("btnJoinRoom").onclick=()=>{
+  if(typeof mqtt==="undefined"){showToast("MQTT ещё загружается...",2500);return;}
+  cleanupNet();
+  state.myName=resolveName($("playerNameInput").value);
+  saveName($("playerNameInput").value);
+  const code=$("joinCodeInput").value.trim().toUpperCase();
+  if(!code||code.length<4){$("guestStatus").textContent="Введите корректный код";$("guestStatus").className="lobby-status err";return;}
+  net.isHost=false;net.roomId=code;net.topic=roomTopic(code);
+  net.lobbyReady=false;net.oppLobbyReady=false;net.gameStarted=false;
+  $("waitingRoomCode").textContent=code;
+  updateWaitingRoomUI();
+  $("waitingStatus").textContent="Подключение к серверу...";
+  $("waitingStatus").className="lobby-status";
+  showScreen("waitingRoomScreen");
+  mqttConnect((client)=>{
+    // ВАЖНО: этот коллбэк вызывается только после успешной subscribe
+    $("waitingStatus").textContent="Ожидание хоста...";
+    $("waitingStatus").className="lobby-status";
+    mqttPublish({type:"join",name:state.myName});
+    updateNetStatus("waiting");
+  });
+};
+
+/* ============ WAITING ROOM ============ */
+$("btnBackFromWaitingRoom").onclick=()=>{
+  mqttPublish({type:"lobby_leave"});
+  setTimeout(()=>{cleanupNet();showScreen("lobbyScreen");},150);
+};
+
+$("btnPlayNow").onclick=()=>{
+  if(net.lobbyReady){
+    net.lobbyReady=false;
+    mqttPublish({type:"lobby_cancel"});
+    updateWaitingRoomUI();
+    return;
+  }
+  if(!hasOpponent()){showToast("Дождитесь второго игрока");return;}
+  net.lobbyReady=true;
+  mqttPublish({type:"lobby_ready"});
+  updateWaitingRoomUI();
+  tryStartLobbyGame();
+};
+
+function tryStartLobbyGame(){
+  if(!net.isHost)return;
+  if(net.lobbyReady&&net.oppLobbyReady)startFromLobby();
+}
+
+function startFromLobby(){
+  if(!net.isHost||net.gameStarted)return;
+  const hs=net.hostSide,st=net.hostSettings;
+  if(!hs||!st)return;
+  net.gameStarted=true;
+  mqttPublish({type:"start",hostSide:hs,settings:st,hostName:state.myName});
+  state.mode="network";
+  applyStartSettings(hs,st);
+  state.side=hs;
+  state.opponentSide=oppositeSide(hs);
+  startGame(hs);
+}
+
+/* ============ NET MESSAGES ============ */
+function handleNetMessage(msg){
+  switch(msg.type){
+    case "join":
+      if(net.isHost){
+        state.oppName=msg.name||"Гость";
+        $("waitingStatus").textContent="Гость присоединился";
+        $("waitingStatus").className="lobby-status ok";
+        // Хост мгновенно отвечает welcome
+        mqttPublish({
+          type:"welcome",
+          hostSide:net.hostSide,
+          hostName:state.myName,
+          settings:net.hostSettings
+        });
+        updateWaitingRoomUI();
+        updateNetStatus("connected");
+      }
+      break;
+
+    case "welcome":
+      if(!net.isHost){
+        state.oppName=msg.hostName||"Хост";
+        net.hostSide=msg.hostSide||"attack";
+        net.hostSettings=msg.settings||{};
+        $("waitingStatus").textContent="Подключено к хосту: "+state.oppName;
+        $("waitingStatus").className="lobby-status ok";
+        updateWaitingRoomUI();
+        updateNetStatus("connected");
+      }
+      break;
+
+    case "lobby_ready":
+      net.oppLobbyReady=true;updateWaitingRoomUI();tryStartLobbyGame();
+      break;
+    case "lobby_cancel":
+      net.oppLobbyReady=false;updateWaitingRoomUI();
+      break;
+    case "lobby_leave":
+      state.oppName="";net.oppLobbyReady=false;net.lobbyReady=false;updateWaitingRoomUI();
+      break;
+
+    case "start":
+      if(!net.isHost&&!net.gameStarted){
+        net.gameStarted=true;
+        state.mode="network";
+        state.oppName=msg.hostName||"Хост";
+        state.side=oppositeSide(msg.hostSide);
+        state.opponentSide=msg.hostSide;
+        applyStartSettings(state.side,msg.settings);
+        startGame(state.side);
+      }
+      break;
+
+    case "ready":
+      net.oppReady=true;
+      net.oppPlacement=(msg.troops||[]).map(t=>({...t,side:state.opponentSide,alive:true}));
+      if(net.myReady)runBattle();
+      break;
+    case "cancel_ready":
+      net.oppReady=false;net.oppPlacement=null;
+      break;
+  }
+}
+
+/* ============ SINGLE PLAYER ============ */
+function startSingle(side){
+  state.mode="single";
+  state.side=side;
+  state.opponentSide=oppositeSide(side);
+  state.myName=resolveName($("playerNameInput").value);
+  saveName($("playerNameInput").value);
+  state.oppName="Компьютер";
+  applyStartSettings(side,{
+    rounds:state.rounds,
+    units:state.startingUnits,
+    horses:state.startingHorses,
+    raidStrength:state.raidStrength
+  });
+  startGame(side);
+}
+
+function applyStartSettings(mySide,settings){
+  settings=settings||{};
+  if(ROUNDS_OK.indexOf(settings.rounds)!==-1)state.rounds=settings.rounds;
+  if(typeof settings.units==="number"&&settings.units>=10)state.startingUnits=settings.units;
+  if(typeof settings.horses==="number"&&settings.horses>=0)state.startingHorses=settings.horses;
+
+  state.units=state.startingUnits;
+  state.horses=state.startingHorses;
+  state.enemyUnits=state.startingUnits;
+  state.enemyHorses=state.startingHorses;
+  if(mySide==="defend")state.units+=DEF_BONUS;
+  else state.enemyUnits+=DEF_BONUS;
+
+  state.round=1;
+  state.troops=[];
+  state.phase="prepare";
+  state.cossackSent=false;
+  state.kotelMode=false;
+  state.kotelTriggered=false;
+  nextId=1;
+}
+
+function startGame(side){
+  if(!side)return;
+  updateTopBar();
+  updatePrepPanel();
+  showScreen("gameScreen");
+  if(isNetwork())updateNetStatus("connected");
+  requestAnimationFrame(()=>{resizeCanvas();drawBoard();});
+}
+
+/* ============ BOARD RENDER ============ */
+function resizeCanvas(){
+  const c=$("board"),wrap=$("boardWrap");
+  if(!c||!wrap)return;
+  const availW=Math.max(120,wrap.clientWidth-32);
+  const availH=Math.max(120,wrap.clientHeight-32);
+  const scale=Math.min(availW/LW,availH/LH,1);
+  c.width=LW;c.height=LH;
+  c.style.width=(LW*scale)+"px";
+  c.style.height=(LH*scale)+"px";
+}
+
+function getCellFromEvent(e){
+  const c=$("board");
+  const rect=c.getBoundingClientRect();
+  const x=(e.clientX-rect.left)*(c.width/rect.width);
+  const y=(e.clientY-rect.top)*(c.height/rect.height);
+  return {col:Math.floor(x/CELL),row:Math.floor(y/CELL)};
+}
+
+function drawBoard(){
+  const c=$("board");
+  if(!c)return;
+  const ctx=c.getContext("2d");
+  ctx.clearRect(0,0,LW,LH);
+
+  ctx.fillStyle="#2a2a2a";ctx.fillRect(0,0,LW,LH);
+  ctx.fillStyle="rgba(140,26,26,0.14)";ctx.fillRect(0,0,NEUTRAL*CELL,LH);
+  ctx.fillStyle="rgba(40,80,160,0.14)";ctx.fillRect(DEF_START*CELL,0,(COLS-DEF_START)*CELL,LH);
+
+  ctx.strokeStyle="rgba(255,255,255,0.06)";ctx.lineWidth=1;
+  for(let x=0;x<=COLS;x++){ctx.beginPath();ctx.moveTo(x*CELL,0);ctx.lineTo(x*CELL,LH);ctx.stroke();}
+  for(let y=0;y<=ROWS;y++){ctx.beginPath();ctx.moveTo(0,y*CELL);ctx.lineTo(LW,y*CELL);ctx.stroke();}
+
+  ctx.strokeStyle="rgba(201,162,39,0.5)";ctx.lineWidth=2;
+  ctx.beginPath();
+  ctx.moveTo(NEUTRAL*CELL,0);ctx.lineTo(NEUTRAL*CELL,LH);
+  ctx.moveTo(DEF_START*CELL,0);ctx.lineTo(DEF_START*CELL,LH);
+  ctx.stroke();
+
+  for(const t of state.troops){
+    if(!t.alive)continue;
+    const isMine=t.side===state.side;
+    const hidden=!isMine&&state.phase==="prepare"&&!isNetwork();
+    const x=t.col*CELL,y=t.row*CELL;
+    ctx.fillStyle = hidden ? "rgba(80,80,80,0.55)" :
+      (t.side==="attack"
+        ? (t.type==="cav"?"#d4a017":"#c0392b")
+        : (t.type==="cav"?"#2c5282":"#7a1010"));
+    ctx.fillRect(x+2,y+2,CELL-4,CELL-4);
+    if(!hidden){
+      ctx.fillStyle="#fff";
+      ctx.font="bold 12px Georgia";
+      ctx.textAlign="center";ctx.textBaseline="middle";
+      ctx.fillText(t.size,x+CELL/2,y+CELL/2);
+    }
+  }
+}
+
+/* ============ TOP / PREP UI ============ */
+function updateTopBar(){
+  const atk=state.side==="attack"?state.myName:state.oppName||"—";
+  const def=state.side==="defend"?state.myName:state.oppName||"—";
+  $("atkNameLabel").textContent=atk||"—";
+  $("defNameLabel").textContent=def||"—";
+  $("roundLabel").textContent="Раунд "+state.round+" / "+state.rounds;
+  $("resLabel").textContent=state.units;
+  $("resHorses").textContent=state.horses;
+  const battle=state.phase==="battle";
+  $("phaseLabel").textContent=battle?"Фаза боя":"Фаза подготовки";
+  $("phaseLabel").className="phase"+(battle?" battle":"");
+  $("btnReady").textContent=battle?"Бой идёт...":"Готов";
+  $("btnReady").disabled=battle;
+}
+
+function updatePrepPanel(){
+  document.querySelectorAll("#prepPanel [data-type]").forEach(b=>b.classList.toggle("active",b.dataset.type===state.selectedType));
+  document.querySelectorAll("#prepPanel [data-size]").forEach(b=>b.classList.toggle("active",parseInt(b.dataset.size,10)===state.selectedSize));
+  const btnC=$("btnCossacks"),btnK=$("btnKotel");
+  btnC.style.display=(state.side==="attack"&&!state.cossackSent&&state.round<state.rounds)?"":"none";
+  btnK.style.display=(state.side==="defend")?"":"none";
+  btnK.classList.toggle("active",state.kotelMode);
+}
+
+/* ============ PREP PANEL HANDLERS ============ */
+document.querySelectorAll("#prepPanel [data-type]").forEach(b=>{
+  b.onclick=()=>{state.selectedType=b.dataset.type;updatePrepPanel();};
+});
+document.querySelectorAll("#prepPanel [data-size]").forEach(b=>{
+  b.onclick=()=>{state.selectedSize=parseInt(b.dataset.size,10);$("customSizeInput").value=String(state.selectedSize);updatePrepPanel();};
+});
+$("customSizeInput").oninput=e=>{
+  const v=parseInt(e.target.value,10);
+  if(!isNaN(v)&&v>0){state.selectedSize=v;document.querySelectorAll("#prepPanel [data-size]").forEach(b=>b.classList.remove("active"));}
+};
+$("btnClear").onclick=()=>{
+  if(state.phase!=="prepare")return;
+  for(const t of state.troops){
+    if(t.side!==state.side)continue;
+    state.units+=t.size;
+    if(t.type==="cav")state.horses+=t.size;
+  }
+  state.troops=state.troops.filter(t=>t.side!==state.side);
+  updateTopBar();drawBoard();
+};
+$("btnCossacks").onclick=()=>{
+  if(state.side!=="attack"||state.cossackSent)return;
+  if(state.units<MIN_ATK_RES+15){showToast("Нужно 15 юнитов сверх резерва");return;}
+  state.units-=15;state.cossackSent=true;
+  showToast("Диверсия казаков отправлена");
+  updateTopBar();updatePrepPanel();
+};
+$("btnKotel").onclick=()=>{
+  state.kotelMode=!state.kotelMode;
+  updatePrepPanel();
+  showToast(state.kotelMode?"Режим Котла включён":"Режим Котла выключен");
+};
+
+/* ============ CANVAS INPUT ============ */
+$("board").addEventListener("contextmenu",e=>{
+  e.preventDefault();
+  if(state.phase!=="prepare")return;
+  const {col,row}=getCellFromEvent(e);
+  const idx=state.troops.findIndex(t=>t.side===state.side&&t.col===col&&t.row===row&&t.alive!==false);
+  if(idx<0)return;
+  const t=state.troops[idx];
+  state.units+=t.size;
+  if(t.type==="cav")state.horses+=t.size;
+  state.troops.splice(idx,1);
+  updateTopBar();drawBoard();
+});
+$("board").addEventListener("click",e=>{
+  if(state.phase!=="prepare")return;
+  const {col,row}=getCellFromEvent(e);
+  const [minC,maxC]=zoneBounds(state.side);
+  if(col<minC||col>=maxC){showToast("Здесь ставить нельзя");return;}
+  if(row<0||row>=ROWS)return;
+  if(state.troops.some(t=>t.side===state.side&&t.col===col&&t.row===row&&t.alive!==false)){showToast("Клетка занята");return;}
+  const size=state.selectedSize;
+  const type=state.selectedType;
+  const costHorses=type==="cav"?size:0;
+  if(size>state.units){showToast("Недостаточно юнитов");return;}
+  if(costHorses>state.horses){showToast("Недостаточно коней");return;}
+  if(state.side==="attack"&&state.round<state.rounds&&(state.units-size)<MIN_ATK_RES){
+    showToast("Атакующие должны оставить "+MIN_ATK_RES+" в резерве");return;
+  }
+  state.units-=size;state.horses-=costHorses;
+  state.troops.push({id:nextId++,side:state.side,type,size,col,row,alive:true});
+  updateTopBar();drawBoard();
+});
+
+/* ============ READY / BATTLE ============ */
+$("btnReady").onclick=()=>{
+  if(state.phase!=="prepare")return;
+  if(state.side==="attack"&&state.round<state.rounds&&state.units<MIN_ATK_RES){
+    showToast("Нужно оставить "+MIN_ATK_RES+" юнитов в резерве");return;
+  }
+  const myTroops=state.troops.filter(t=>t.side===state.side);
+  if(myTroops.length===0){showToast("Поставьте хотя бы один отряд");return;}
+  state.phase="battle";
+  updateTopBar();
+  if(isNetwork()){
+    net.myReady=true;
+    mqttPublish({type:"ready",troops:myTroops.map(t=>({id:t.id,type:t.type,size:t.size,col:t.col,row:t.row}))});
+    if(net.oppReady)runBattle();
+    else{$("btnReady").textContent="Ожидание противника...";$("btnReady").disabled=true;}
+  }else{
+    generateAITroops();
+    setTimeout(runBattle,350);
+  }
+};
+
+function generateAITroops(){
+  let aiU=state.enemyUnits,aiH=state.enemyHorses;
+  const [minC,maxC]=zoneBounds(state.opponentSide);
+  for(let i=0;i<10;i++){
+    if(aiU<=0)break;
+    const size=Math.min(aiU,5+Math.floor(Math.random()*Math.min(35,aiU)));
+    const useCav=aiH>=size&&Math.random()<0.35;
+    if(useCav)aiH-=size;
+    const col=minC+Math.floor(Math.random()*(maxC-minC));
+    const row=Math.floor(Math.random()*ROWS);
+    if(state.troops.some(t=>t.side===state.opponentSide&&t.col===col&&t.row===row))continue;
+    state.troops.push({id:nextId++,side:state.opponentSide,type:useCav?"cav":"inf",size,col,row,alive:true});
+    aiU-=size;
+  }
+  state.enemyUnits=aiU;state.enemyHorses=aiH;
+}
+
+function runBattle(){
+  if(isNetwork()&&net.oppPlacement){
+    for(const t of net.oppPlacement){
+      if(!state.troops.some(x=>x.id===t.id&&x.side===state.opponentSide))
+        state.troops.push({id:nextId++,side:state.opponentSide,type:t.type,size:t.size,col:t.col,row:t.row,alive:true});
+    }
+  }
+  drawBoard();
+
+  function power(side){
+    let p=0;
+    for(const t of state.troops){
+      if(!t.alive||t.side!==side)continue;
+      p+=t.size*(t.type==="cav"?1.6:1);
+    }
+    return p;
+  }
+  const atkP=power("attack");
+  const defP=power("defend");
+  const atkDmg=Math.round(defP*0.55+Math.random()*10);
+  const defDmg=Math.round(atkP*0.55+Math.random()*10);
+
+  applyLosses("attack",atkDmg);
+  applyLosses("defend",defDmg);
+
+  let mySurvived=0,myHorsesSurvived=0;
+  for(const t of state.troops){
+    if(!t.alive||t.side!==state.side)continue;
+    mySurvived+=t.size;
+    if(t.type==="cav")myHorsesSurvived+=t.size;
+  }
+  state.units=mySurvived;
+  state.horses=myHorsesSurvived;
+  state.enemyUnits=(state.side==="attack"?defP:atkP)*0.45|0;
+  state.troops=[];
+
+  let txt;
+  if(atkP>defP*1.15)txt="Победа атакующих в этом раунде.";
+  else if(defP>atkP*1.15)txt="Победа обороняющихся в этом раунде.";
+  else txt="Раунд завершён вничью.";
+
+  $("roundResultTitle").textContent="Итог раунда "+state.round;
+  $("roundResultText").textContent=txt+"\n\nВаши резервы: "+state.units+" юнитов, "+state.horses+" коней.";
+  $("roundOverlay").classList.add("show");
+  updateTopBar();
+}
+
+function applyLosses(side,total){
+  let remaining=total;
+  const pool=state.troops.filter(t=>t.alive&&t.side===side);
+  while(remaining>0&&pool.length){
+    const idx=Math.floor(Math.random()*pool.length);
+    const t=pool[idx];
+    const dmg=Math.min(t.size,Math.ceil(remaining/Math.max(1,pool.length)));
+    t.size-=dmg;remaining-=dmg;
+    if(t.size<=0){t.alive=false;pool.splice(idx,1);}
+  }
+}
+
+$("btnNextRound").onclick=()=>{
+  $("roundOverlay").classList.remove("show");
+  if(state.round>=state.rounds){endGame();return;}
+  state.round++;
+  if(state.round>=2){
+    state.units+=REINF_U;state.horses+=REINF_H;
+    state.enemyUnits+=REINF_U;state.enemyHorses+=REINF_H;
+  }
+  state.phase="prepare";
+  state.cossackSent=false;
+  if(isNetwork()){net.myReady=false;net.oppReady=false;net.oppPlacement=null;}
+  updateTopBar();updatePrepPanel();drawBoard();
+  showToast("Раунд "+state.round+" — подготовка");
+};
+
+function endGame(){
+  const atkTotal=state.side==="attack"?state.units:state.enemyUnits;
+  const defTotal=state.side==="defend"?state.units:state.enemyUnits;
+  let winner=atkTotal>defTotal?"Атакующие":(defTotal>atkTotal?"Обороняющиеся":"Ничья");
+  $("roundResultTitle").textContent="Матч завершён";
+  $("roundResultText").textContent="Победитель: "+winner+"\n\nАтакующие: "+atkTotal+"\nОбороняющиеся: "+defTotal;
+  $("btnNextRound").textContent="В меню";
+  $("btnNextRound").onclick=()=>{cleanupNet();location.reload();};
+  $("roundOverlay").classList.add("show");
+}
+
+/* ============ LEAVE ============ */
+$("btnToMain").onclick=()=>{
+  if(confirm("Выйти в главное меню?")){
+    mqttPublish({type:"bye"});
+    cleanupNet();
+    state.phase="prepare";
+    state.troops=[];
+    showScreen("mainMenu");
+  }
+};
+
+window.addEventListener("resize",()=>{
+  if($("gameScreen").classList.contains("active")){resizeCanvas();drawBoard();}
+});
+
+/* ============ INIT ============ */
+applyVolume(50);
+</script>
+</body>
+</html>
